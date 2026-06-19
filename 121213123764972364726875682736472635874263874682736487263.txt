@@ -1,0 +1,72 @@
+Take the existing DrawNest MVP and extend it with simple retention features.
+
+IMPORTANT:
+- Do NOT add accounts
+- Do NOT add a database (except optional lightweight caching)
+- Do NOT add payments, ads, image generation, or voice
+- Keep everything client-side or simple API routes
+- Keep the app fast and minimal
+
+Add the following features:
+
+1. "Try Again with Different Goal"
+- After showing results, add a button:
+  "Try this with a different goal"
+- Reuse the same uploaded image
+- Allow user to quickly switch goal and re-run analysis
+- Do not require re-upload
+
+2. Daily Prompt
+- Add a small section at the top:
+  "Today's Prompt"
+- Rotate between 5–10 hardcoded prompts using the current date
+- Example prompts:
+  - Draw a boat focusing on shadows
+  - Draw something simple with only 5 lines
+  - Add depth using line thickness
+- No backend required
+
+3. Faster Retry UX
+- Add a "Analyze Again" button
+- Keep previous image and goal selected
+- Make re-analysis feel instant (use loading state)
+
+4. Before / After View (Session Only)
+- After analysis, show:
+  - Uploaded image on left
+  - Feedback on right
+- If user re-runs analysis:
+  - Keep previous feedback visible as "Previous"
+  - Show new feedback as "New"
+- This is session-only (no saving)
+
+5. "Next Improvement" Suggestion
+- Modify the API response to always include:
+  - One final line:
+    "Next step: focus only on ___"
+- This should be generated in the SAME API call (no extra calls)
+
+6. Lightweight Caching
+- Cache results based on:
+  - image hash + selected goal
+- If user repeats the same combo:
+  - return cached result instantly
+- Use in-memory cache or simple local storage
+
+UI Requirements:
+- Keep layout clean and minimal
+- Do not clutter the screen
+- Add small, subtle UI elements only
+- Maintain fast performance
+
+Performance:
+- Avoid additional API calls
+- Keep everything within one request per analysis
+- Optimize for speed and responsiveness
+
+Return clean, production-ready updates to the existing codebase.
+
+
+
+### IMPORTANT: 
+Integrate these things into the current web app, ensure it is cohesive and looks amazing, don't have weird ui, don't break everything, adjust, make it work.

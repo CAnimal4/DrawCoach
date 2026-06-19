@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DrawNest",
+  title: "DrawCoach",
   description: "A minimal drawing critique MVP.",
 };
 

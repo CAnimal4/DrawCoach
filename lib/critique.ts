@@ -1,3 +1,4 @@
+
 import { GOALS, type AnalyzeRequest, type Critique, type CritiqueImprovement, type Goal, type ImageMetrics } from "./types";
 
 const CACHE_TTL_MS = 1000 * 60 * 60 * 6;
@@ -52,6 +53,7 @@ export function generateCritique(goal: Goal, metrics: ImageMetrics): Critique {
   return {
     summary: buildSummary(goal, metrics),
     improvements,
+    nextStep: buildNextStep(goal, improvements, metrics),
   };
 }
 
@@ -270,7 +272,7 @@ function selectCount(goal: Goal, metrics: ImageMetrics): number {
   return 3;
 }
 
-function cacheKey({ goal, metrics }: AnalyzeRequest): string {
+function cacheKey({ goal, imageHash, metrics }: AnalyzeRequest): string {
   const rounded = {
     width: metrics.width,
     height: metrics.height,
@@ -281,7 +283,7 @@ function cacheKey({ goal, metrics }: AnalyzeRequest): string {
     clutter: roundForCache(metrics.clutter),
   };
 
-  return `${goal}:${JSON.stringify(rounded)}`;
+  return `${imageHash}:${goal}:${JSON.stringify(rounded)}`;
 }
 
 function pruneCache(now: number): void {
@@ -320,4 +322,42 @@ function goalScore(metrics: ImageMetrics, type: "depth"): number {
   }
 
   return 0.4;
+}
+
+function buildNextStep(
+  goal: Goal,
+  improvements: CritiqueImprovement[],
+  metrics: ImageMetrics,
+): string {
+  const firstFix = improvements[0]?.fix.toLowerCase() ?? "";
+
+  if (goal === "better shading" || firstFix.includes("shadow") || metrics.contrast < 0.14) {
+    return "Next step: focus only on one clear shadow side.";
+  }
+
+  if (goal === "less cluttered" || firstFix.includes("simplify") || firstFix.includes("erase")) {
+    return "Next step: focus only on simplifying one quiet area.";
+  }
+
+  if (goal === "more 3D" || firstFix.includes("darker")) {
+    return "Next step: focus only on one front-side-shadow relationship.";
+  }
+
+  if (goal === "simple" || metrics.edgeDensity > 0.16) {
+    return "Next step: focus only on the main shape.";
+  }
+
+  if (goal === "detailed" || firstFix.includes("detail")) {
+    return "Next step: focus only on one useful focal detail.";
+  }
+
+  if (goal === "playful") {
+    return "Next step: focus only on one playful accent.";
+  }
+
+  if (goal === "elegant") {
+    return "Next step: focus only on cleaner spacing around the focal point.";
+  }
+
+  return "Next step: focus only on the clearest value change.";
 }

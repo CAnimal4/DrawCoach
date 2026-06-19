@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { prepareImage } from "@/lib/client-image";
+import { analyzeWithCache } from "@/lib/critique";
 import { GOALS, type AnalyzeResponse, type Goal, type ImageMetrics } from "@/lib/types";
 
 type UploadState = {
@@ -70,24 +71,7 @@ export default function Home() {
     setIsAnalyzing(true);
 
     try {
-      const response = await fetch("/api/analyze", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          goal,
-          metrics: upload.metrics,
-        }),
-      });
-
-      const payload = (await response.json()) as AnalyzeResponse | { error?: string };
-
-      if (!response.ok) {
-        throw new Error("error" in payload && payload.error ? payload.error : "Analysis failed.");
-      }
-
-      setResult(payload as AnalyzeResponse);
+      setResult(analyzeWithCache({ goal, metrics: upload.metrics }));
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Analysis failed.");
     } finally {

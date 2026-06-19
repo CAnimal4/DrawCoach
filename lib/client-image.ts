@@ -1,9 +1,11 @@
+
 import type { ImageMetrics } from "./types";
 
 const MAX_SIZE = 512;
 
 export type PreparedImage = {
   dataUrl: string;
+  imageHash: string;
   metrics: ImageMetrics;
 };
 
@@ -32,8 +34,11 @@ export async function prepareImage(file: File): Promise<PreparedImage> {
 
     const imageData = context.getImageData(0, 0, width, height);
 
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+
     return {
-      dataUrl: canvas.toDataURL("image/jpeg", 0.82),
+      dataUrl,
+      imageHash: hashString(dataUrl),
       metrics: computeImageMetrics(imageData),
     };
   } finally {
@@ -124,4 +129,15 @@ function roundMetric(value: number): number {
 
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
+}
+
+function hashString(value: string): string {
+  let hash = 0x811c9dc5;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+
+  return (hash >>> 0).toString(16).padStart(8, "0");
 }

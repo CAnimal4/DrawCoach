@@ -5,6 +5,7 @@ const isGitHubPages = process.env.GITHUB_ACTIONS === "true";
 const nextConfig: NextConfig = {
   output: "export",
   trailingSlash: true,
+  devIndicators: false,
   images: {
     unoptimized: true,
   },
@@ -20,3 +21,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+

@@ -74,7 +74,6 @@ export default function Home() {
   const [goal, setGoal] = useState<Goal>("realistic");
   const [upload, setUpload] = useState<UploadState | null>(null);
   const [result, setResult] = useState<AnalysisRecord | null>(null);
-  const [previousResult, setPreviousResult] = useState<AnalysisRecord | null>(null);
   const [error, setError] = useState("");
   const [dailyPrompt, setDailyPrompt] = useState<string>(DAILY_PROMPTS[0]);
   const [didRequestGoalSwap, setDidRequestGoalSwap] = useState(false);
@@ -137,7 +136,6 @@ export default function Home() {
 
     setError("");
     setResult(null);
-    setPreviousResult(null);
     setDidRequestGoalSwap(false);
     setIsPreparing(true);
 
@@ -160,7 +158,6 @@ export default function Home() {
   function resetUpload() {
     setUpload(null);
     setResult(null);
-    setPreviousResult(null);
     setDidRequestGoalSwap(false);
     setError("");
 
@@ -177,12 +174,8 @@ export default function Home() {
     setError("");
     const priorResult = result;
 
-    if (priorResult) {
-      setPreviousResult(priorResult);
-      setResult(null);
-    }
-
     setIsAnalyzing(true);
+    setResult(null);
 
     try {
       const cacheKey = getAnalysisCacheKey(upload.imageHash, goal);
@@ -207,7 +200,6 @@ export default function Home() {
     } catch (caught) {
       if (priorResult) {
         setResult(priorResult);
-        setPreviousResult(null);
       }
 
       setError(caught instanceof Error ? caught.message : "Analysis failed.");
@@ -261,8 +253,8 @@ export default function Home() {
             </p>
             <div className="mt-8 grid max-w-md grid-cols-3 gap-px overflow-hidden rounded-md border border-[#dededb] bg-[#dededb] text-sm">
               <Step label="Upload" active={Boolean(upload)} />
-              <Step label="Analyze" active={isAnalyzing || Boolean(result || previousResult)} />
-              <Step label="Fix list" active={Boolean(result || previousResult)} />
+              <Step label="Analyze" active={isAnalyzing || Boolean(result)} />
+              <Step label="Fix list" active={Boolean(result)} />
             </div>
           </div>
 
@@ -381,7 +373,7 @@ export default function Home() {
               </button>
             </div>
 
-            {upload && (result || previousResult) ? (
+            {upload && result ? (
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   className="rounded-md border border-[#d8dce1] bg-white px-3 py-2 text-xs font-semibold text-[#34383e] transition hover:border-[var(--accent)] hover:text-[var(--accent)] focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/10 disabled:cursor-not-allowed disabled:opacity-60"
@@ -415,16 +407,20 @@ export default function Home() {
               </p>
             ) : null}
 
-            {upload && (result || previousResult || isAnalyzing) ? (
-              <SessionWorkbench
-                compact={isCompact}
-                current={result}
-                isAnalyzing={isAnalyzing}
-                mode={critiqueMode}
-                previous={previousResult}
-                still={isStill}
-                upload={upload}
-              />
+            {upload && (result || isAnalyzing) ? (
+              <section
+                className={[
+                  "rounded-lg border border-[#dededb] bg-white shadow-[0_22px_70px_rgba(22,23,25,0.08)]",
+                  isCompact ? "p-4" : "p-5",
+                  isStill ? "" : "animate-[fadeIn_280ms_ease-out]",
+                ].join(" ")}
+              >
+                {result ? (
+                  <FeedbackPanel label="Feedback" mode={critiqueMode} record={result} />
+                ) : (
+                  <LoadingFeedback label="Feedback" />
+                )}
+              </section>
             ) : null}
           </div>
         </section>
@@ -464,75 +460,6 @@ function Step({ active, label }: { active: boolean; label: string }) {
         />
       </div>
     </div>
-  );
-}
-
-function SessionWorkbench({
-  compact,
-  current,
-  isAnalyzing,
-  mode,
-  previous,
-  still,
-  upload,
-}: {
-  compact: boolean;
-  current: AnalysisRecord | null;
-  isAnalyzing: boolean;
-  mode: CritiqueMode;
-  previous: AnalysisRecord | null;
-  still: boolean;
-  upload: UploadState;
-}) {
-  const showPrevious = Boolean(previous);
-
-  return (
-    <section
-      className={[
-        "grid gap-5 rounded-lg border border-[#dededb] bg-white shadow-[0_22px_70px_rgba(22,23,25,0.08)] lg:grid-cols-[0.82fr_1.18fr]",
-        compact ? "p-4" : "p-5",
-        still ? "" : "animate-[fadeIn_280ms_ease-out]",
-      ].join(" ")}
-    >
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#737982]">Before</p>
-        <div className="mt-3 overflow-hidden rounded-md bg-[#f4f5f6]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            alt={`Uploaded drawing: ${upload.fileName}`}
-            className="max-h-[22rem] w-full object-contain"
-            src={upload.previewUrl}
-          />
-        </div>
-        <p className="mt-3 truncate text-xs font-medium text-[#68707b]">{upload.fileName}</p>
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#737982]">
-              After
-            </p>
-            <h2 className="mt-1 text-lg font-semibold">Feedback</h2>
-          </div>
-          {current?.response.cached ? (
-            <span className="rounded-full bg-[var(--accent-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
-              Cached
-            </span>
-          ) : null}
-        </div>
-
-        {showPrevious && previous ? (
-          <FeedbackPanel label="Previous" mode={mode} record={previous} subdued />
-        ) : null}
-
-        {current ? (
-          <FeedbackPanel label={showPrevious ? "New" : "New feedback"} mode={mode} record={current} />
-        ) : isAnalyzing ? (
-          <LoadingFeedback label={showPrevious ? "New" : "New feedback"} />
-        ) : null}
-      </div>
-    </section>
   );
 }
 

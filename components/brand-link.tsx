@@ -12,11 +12,11 @@ export function BrandLink() {
       <Image
         alt=""
         aria-hidden="true"
-        className="h-6 w-6 shrink-0 object-contain sm:h-8 sm:w-8"
-        height="32"
+        className="h-7 w-7 shrink-0 object-contain sm:h-9 sm:w-9"
+        height="36"
         priority
         src={DRAWCOACH_LOGO_PATH}
-        width="32"
+        width="36"
       />
       <span>DrawCoach</span>
     </Link>

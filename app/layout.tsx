@@ -70,6 +70,9 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  verification: {
+    google: "WtCR9KD5xEWTG2HeH-qKTCBdFAY0A-a9D2HESMu0bSU",
+  },
 };
 
 export default function RootLayout({

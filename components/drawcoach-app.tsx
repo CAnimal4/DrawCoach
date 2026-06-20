@@ -32,6 +32,9 @@ const ACCENTS: Record<AccentMode, { color: string; soft: string; name: string }>
   plum: { color: "#7a2e83", soft: "#f7edf8", name: "Plum" },
 };
 
+const FEEDBACK_MAILTO_ACTION =
+  "mailto:clarkbythebay@gmail.com?subject=DrawCoach%20feedback";
+
 export function DrawCoachApp() {
   const [goal, setGoal] = useState<Goal>("realistic");
   const [upload, setUpload] = useState<UploadState | null>(null);
@@ -471,8 +474,78 @@ function DrawCoachMenu({
   textMode: TextMode;
   workspaceMode: WorkspaceMode;
 }) {
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+
   return (
     <div className="fixed bottom-5 left-5 z-40">
+      {isFeedbackOpen ? (
+        <div className="mb-3 w-[23rem] max-w-[calc(100vw-2.5rem)] rounded-lg border border-[#d9dde3] bg-white p-4 shadow-[0_24px_80px_rgba(22,23,25,0.18)]">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-[#161719]">Send feedback</p>
+              <p className="mt-1 text-xs leading-5 text-[#626975]">
+                Share what felt useful, confusing, or missing.
+              </p>
+            </div>
+            <button
+              aria-label="Close feedback"
+              className="rounded-md px-2 py-1 text-sm font-semibold text-[#737982] transition hover:bg-[#f3f5f8] hover:text-[#161719]"
+              type="button"
+              onClick={() => setIsFeedbackOpen(false)}
+            >
+              x
+            </button>
+          </div>
+
+          <form
+            action={FEEDBACK_MAILTO_ACTION}
+            className="mt-4 space-y-3"
+            encType="text/plain"
+            method="post"
+          >
+            <label className="block">
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-[#737982]">
+                Feedback
+              </span>
+              <textarea
+                className="min-h-28 w-full resize-y rounded-md border border-[#d8dce1] bg-white px-3 py-2 text-sm leading-6 text-[#161719] outline-none transition placeholder:text-[#9aa1aa] focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10"
+                name="DrawCoach feedback"
+                placeholder="What should DrawCoach improve?"
+                required
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-[#737982]">
+                Reply email optional
+              </span>
+              <input
+                className="h-10 w-full rounded-md border border-[#d8dce1] bg-white px-3 text-sm text-[#161719] outline-none transition placeholder:text-[#9aa1aa] focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10"
+                name="Reply email"
+                placeholder="you@example.com"
+                type="email"
+              />
+            </label>
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                className="rounded-md border border-[#d8dce1] bg-white px-3 py-2 text-sm font-semibold text-[#34383e] transition hover:border-[#1946d2] hover:text-[#1946d2] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/10"
+                type="button"
+                onClick={() => setIsFeedbackOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/20"
+                type="submit"
+              >
+                Send
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
+
       {isOpen ? (
         <div className="mb-3 max-h-[calc(100vh-5.5rem)] w-[23rem] max-w-[calc(100vw-2.5rem)] overflow-y-auto rounded-lg border border-[#d9dde3] bg-white p-4 shadow-[0_24px_80px_rgba(22,23,25,0.18)]">
           <div className="flex items-start justify-between gap-4">
@@ -562,6 +635,16 @@ function DrawCoachMenu({
               <MenuLink href="/terms" label="Terms of Use" />
               <MenuLink href="/cookies" label="Cookie Policy" />
             </div>
+          </div>
+
+          <div className="mt-5 border-t border-[#ececea] pt-4">
+            <button
+              className="w-full rounded-md border border-[#d8dce1] px-3 py-2 text-left text-sm font-semibold text-[#34383e] transition hover:border-[#1946d2] hover:text-[#1946d2] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/10"
+              type="button"
+              onClick={() => setIsFeedbackOpen(true)}
+            >
+              Feedback
+            </button>
           </div>
         </div>
       ) : null}

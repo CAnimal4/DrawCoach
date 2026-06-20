@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   output: "export",
   trailingSlash: true,
   devIndicators: false,
+  env: {
+    NEXT_PUBLIC_BASE_PATH: isGitHubPages ? "/DrawCoach" : "",
+  },
   images: {
     unoptimized: true,
   },

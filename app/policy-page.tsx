@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLink } from "@/components/brand-link";
 import type { Policy } from "@/lib/legal";
 
 export function PolicyPage({ policy }: { policy: Policy }) {
@@ -6,9 +7,7 @@ export function PolicyPage({ policy }: { policy: Policy }) {
     <main className="min-h-screen px-5 py-6 text-[#161719] sm:px-8 lg:px-12">
       <div className="mx-auto w-full max-w-3xl">
         <header className="flex items-center justify-between border-b border-[#dededb] pb-5">
-          <Link className="text-[1.7rem] font-semibold leading-none tracking-normal" href="/">
-            DrawCoach
-          </Link>
+          <BrandLink />
           <Link
             className="rounded-full border border-[#dededb] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#59606a] transition hover:border-[#1946d2] hover:text-[#1946d2]"
             href="/"

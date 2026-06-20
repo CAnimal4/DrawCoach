@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { BrandLink } from "@/components/brand-link";
 import {
   buildShareData,
   buildShareLinks,
@@ -9,6 +11,7 @@ import {
 } from "@/lib/share";
 import { prepareImage } from "@/lib/client-image";
 import { analyzeWithCache } from "@/lib/critique";
+import { DRAWCOACH_LOGO_PATH } from "@/lib/site";
 import { GOALS, type AnalyzeResponse, type Goal, type ImageMetrics } from "@/lib/types";
 
 type UploadState = {
@@ -163,14 +166,12 @@ export function DrawCoachApp() {
       ].join(" ")}
     >
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl flex-col">
-        <header className="flex items-center justify-between border-b border-[#dededb] pb-5">
-          <Link className="text-[1.7rem] font-semibold leading-none tracking-normal" href="/">
-            DrawCoach
-          </Link>
-          <div className="flex items-center gap-2">
+        <header className="flex items-center justify-between gap-3 border-b border-[#dededb] pb-5">
+          <BrandLink />
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             {isPromoDismissed ? (
               <button
-                className="rounded-full border border-[var(--accent)] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--accent)] transition hover:bg-[var(--accent-soft)] focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/10"
+                className="whitespace-nowrap rounded-full border border-[var(--accent)] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--accent)] transition hover:bg-[var(--accent-soft)] focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/10"
                 type="button"
                 onClick={() => {
                   void shareDrawCoach();
@@ -180,12 +181,12 @@ export function DrawCoachApp() {
               </button>
             ) : null}
             <Link
-              className="rounded-full border border-[#dededb] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#59606a] transition hover:border-[var(--accent)] hover:text-[var(--accent)] focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/10"
+              className="whitespace-nowrap rounded-full border border-[#dededb] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#59606a] transition hover:border-[var(--accent)] hover:text-[var(--accent)] focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/10"
               href="/about"
             >
               About
             </Link>
-            <span className="rounded-full border border-[#dededb] bg-white px-3 py-1 text-xs font-medium uppercase tracking-[0.16em] text-[#6c7178]">
+            <span className="whitespace-nowrap rounded-full border border-[#dededb] bg-white px-3 py-1 text-xs font-medium uppercase tracking-[0.16em] text-[#6c7178]">
               {statusText}
             </span>
           </div>
@@ -568,11 +569,18 @@ function DrawCoachMenu({
       <button
         aria-expanded={isOpen}
         aria-label="Open DrawCoach menu"
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-[#202124] font-serif text-[1.08rem] font-semibold italic leading-none text-white shadow-[0_10px_28px_rgba(22,23,25,0.25),inset_0_0_0_1px_rgba(255,255,255,0.16)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#202124] hover:shadow-[0_14px_34px_rgba(22,23,25,0.28),inset_0_0_0_1px_rgba(255,255,255,0.18)] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/20"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-[#202124] shadow-[0_10px_28px_rgba(22,23,25,0.25),inset_0_0_0_1px_rgba(255,255,255,0.16)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#202124] hover:shadow-[0_14px_34px_rgba(22,23,25,0.28),inset_0_0_0_1px_rgba(255,255,255,0.18)] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/20"
         type="button"
         onClick={() => setIsOpen(!isOpen)}
       >
-        D
+        <Image
+          alt=""
+          aria-hidden="true"
+          className="h-7 w-7 object-contain brightness-0 invert"
+          height="28"
+          src={DRAWCOACH_LOGO_PATH}
+          width="28"
+        />
       </button>
     </div>
   );

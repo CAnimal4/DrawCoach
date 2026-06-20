@@ -2,6 +2,8 @@ export const SITE_NAME = "DrawCoach";
 export const SITE_URL = "https://drawcoach.vercel.app";
 export const FALLBACK_SITE_URL = "https://canimal4.github.io/DrawCoach/";
 export const OG_IMAGE_PATH = "/og-image.svg";
+export const PUBLIC_BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+export const DRAWCOACH_LOGO_PATH = `${PUBLIC_BASE_PATH}/drawcoach-logo.png`;
 
 export const SITE_TITLE = "DrawCoach - Free Online Drawing Critique Tool";
 export const SITE_DESCRIPTION =

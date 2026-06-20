@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BrandLink } from "@/components/brand-link";
 import { absoluteUrl, OG_IMAGE_URL, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 const pageTitle = "About DrawCoach - How the Free Drawing Critique Tool Works";
@@ -116,9 +117,7 @@ export default function AboutPage() {
       />
       <div className="mx-auto w-full max-w-3xl">
         <header className="flex items-center justify-between border-b border-[#dededb] pb-5">
-          <Link className="text-[1.7rem] font-semibold leading-none tracking-normal" href="/">
-            DrawCoach
-          </Link>
+          <BrandLink />
           <Link
             className="rounded-full border border-[#dededb] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#59606a] transition hover:border-[#1946d2] hover:text-[#1946d2]"
             href="/"

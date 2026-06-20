@@ -11,6 +11,7 @@ import {
 } from "@/lib/share";
 import { prepareImage } from "@/lib/client-image";
 import { analyzeWithCache } from "@/lib/critique";
+import { buildFeedbackMailto } from "@/lib/feedback";
 import { DRAWCOACH_LOGO_PATH } from "@/lib/site";
 import { GOALS, type AnalyzeResponse, type Goal, type ImageMetrics } from "@/lib/types";
 
@@ -31,9 +32,6 @@ const ACCENTS: Record<AccentMode, { color: string; soft: string; name: string }>
   teal: { color: "#087f76", soft: "#e9f7f5", name: "Teal" },
   plum: { color: "#7a2e83", soft: "#f7edf8", name: "Plum" },
 };
-
-const FEEDBACK_MAILTO_ACTION =
-  "mailto:clarkbythebay@gmail.com?subject=DrawCoach%20feedback";
 
 export function DrawCoachApp() {
   const [goal, setGoal] = useState<Goal>("realistic");
@@ -475,6 +473,23 @@ function DrawCoachMenu({
   workspaceMode: WorkspaceMode;
 }) {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackReplyEmail, setFeedbackReplyEmail] = useState("");
+  const [feedbackStatus, setFeedbackStatus] = useState("");
+
+  function openFeedbackDraft() {
+    const mailto = buildFeedbackMailto({
+      feedback: feedbackText,
+      replyEmail: feedbackReplyEmail,
+      pageUrl: window.location.href,
+      userAgent: window.navigator.userAgent,
+      viewport: `${window.innerWidth}x${window.innerHeight}`,
+      timestamp: new Date().toISOString(),
+    });
+
+    window.location.href = mailto;
+    setFeedbackStatus("Email draft opened; send it from your mail app.");
+  }
 
   return (
     <div className="fixed bottom-5 left-5 z-40 flex max-w-[calc(100vw-2.5rem)] items-end gap-3 max-sm:flex-col max-sm:items-start">
@@ -604,9 +619,9 @@ function DrawCoachMenu({
         <div className="w-[23rem] max-w-[calc(100vw-2.5rem)] rounded-lg border border-[#d9dde3] bg-white p-4 shadow-[0_24px_80px_rgba(22,23,25,0.18)] sm:max-w-[calc(100vw-27rem)]">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-[#161719]">Send feedback</p>
+              <p className="text-sm font-semibold text-[#161719]">Feedback</p>
               <p className="mt-1 text-xs leading-5 text-[#626975]">
-                Share what felt useful, confusing, or missing.
+                Opens your email app with a draft you can review and send.
               </p>
             </div>
             <button
@@ -620,10 +635,11 @@ function DrawCoachMenu({
           </div>
 
           <form
-            action={FEEDBACK_MAILTO_ACTION}
             className="mt-4 space-y-3"
-            encType="text/plain"
-            method="post"
+            onSubmit={(event) => {
+              event.preventDefault();
+              openFeedbackDraft();
+            }}
           >
             <label className="block">
               <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-[#737982]">
@@ -634,6 +650,11 @@ function DrawCoachMenu({
                 name="DrawCoach feedback"
                 placeholder="What should DrawCoach improve?"
                 required
+                value={feedbackText}
+                onChange={(event) => {
+                  setFeedbackText(event.target.value);
+                  setFeedbackStatus("");
+                }}
               />
             </label>
 
@@ -646,6 +667,11 @@ function DrawCoachMenu({
                 name="Reply email"
                 placeholder="you@example.com"
                 type="email"
+                value={feedbackReplyEmail}
+                onChange={(event) => {
+                  setFeedbackReplyEmail(event.target.value);
+                  setFeedbackStatus("");
+                }}
               />
             </label>
 
@@ -661,9 +687,15 @@ function DrawCoachMenu({
                 className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/20"
                 type="submit"
               >
-                Send
+                Open email draft
               </button>
             </div>
+
+            {feedbackStatus ? (
+              <p className="rounded-md border border-[#d9dfee] bg-[#f7f9ff] px-3 py-2 text-xs font-medium leading-5 text-[#1946d2]">
+                {feedbackStatus}
+              </p>
+            ) : null}
           </form>
         </div>
       ) : null}

@@ -11,6 +11,7 @@ import {
   critiqueCacheSizeForTest,
   generateCritique,
 } from "../lib/critique";
+import { buildFeedbackMailto } from "../lib/feedback";
 import { policies } from "../lib/legal";
 import {
   buildShareData,
@@ -110,6 +111,28 @@ test("share copy includes primary and fallback app links", () => {
   assert.match(shareLinks.sms, /^sms:/);
   assert.equal(SHARE_PROMO_DISMISSED_KEY, "drawcoach-share-promo-dismissed");
   assert.equal(FALLBACK_SHARE_URL, "https://canimal4.github.io/DrawCoach/");
+});
+
+test("feedback mailto is encoded, sanitized, and honest", () => {
+  const mailto = buildFeedbackMailto({
+    feedback: "Love this. token=super-secret-value\nPlease add clearer shading notes.",
+    replyEmail: "artist@example.com",
+    pageUrl: "https://drawcoach.vercel.app/?debugToken=should-not-be-special",
+    userAgent: "Test Browser API_KEY=abc123",
+    viewport: "1280x800",
+    timestamp: "2026-06-20T20:00:00.000Z",
+  });
+  const parsed = new URL(mailto);
+  const body = parsed.searchParams.get("body") ?? "";
+
+  assert.equal(parsed.protocol, "mailto:");
+  assert.equal(parsed.pathname, "clarkbythebay@gmail.com");
+  assert.equal(parsed.searchParams.get("subject"), "DrawCoach feedback");
+  assert.match(body, /DrawCoach feedback/);
+  assert.match(body, /token=\[redacted\]/);
+  assert.match(body, /API_KEY=\[redacted\]/);
+  assert.match(body, /email draft was opened locally/i);
+  assert.doesNotMatch(body, /super-secret-value|abc123/);
 });
 
 test("legal policies include required MVP and future-change language", () => {

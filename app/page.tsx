@@ -15,11 +15,31 @@ const ACCENTS = {
 } as const;
 
 const SETTINGS_KEY = "drawcoach-settings";
+const ANALYSIS_CACHE_KEY = "drawcoach-analysis-cache";
+const ANALYSIS_CACHE_TTL_MS = 1000 * 60 * 60 * 8;
+const MAX_STORED_ANALYSES = 24;
+
+const DAILY_PROMPTS = [
+  "Draw a boat focusing on shadows.",
+  "Draw something simple with only 5 lines.",
+  "Add depth using line thickness.",
+  "Sketch a mug using only soft edges.",
+  "Draw a tiny room with one strong light source.",
+  "Make a plant feel more 3D with overlap.",
+  "Draw a shoe and simplify the background.",
+  "Redraw an object with one playful exaggeration.",
+] as const;
 
 type UploadState = {
   fileName: string;
+  imageHash: string;
   previewUrl: string;
   metrics: ImageMetrics;
+};
+
+type AnalysisRecord = {
+  goal: Goal;
+  response: AnalyzeResponse;
 };
 
 type AccentMode = keyof typeof ACCENTS;
@@ -53,14 +73,18 @@ const DEFAULT_SETTINGS: UserSettings = {
 export default function Home() {
   const [goal, setGoal] = useState<Goal>("realistic");
   const [upload, setUpload] = useState<UploadState | null>(null);
-  const [result, setResult] = useState<AnalyzeResponse | null>(null);
+  const [result, setResult] = useState<AnalysisRecord | null>(null);
+  const [previousResult, setPreviousResult] = useState<AnalysisRecord | null>(null);
   const [error, setError] = useState("");
+  const [dailyPrompt, setDailyPrompt] = useState<string>(DAILY_PROMPTS[0]);
+  const [didRequestGoalSwap, setDidRequestGoalSwap] = useState(false);
   const [isPreparing, setIsPreparing] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [didHydrateSettings, setDidHydrateSettings] = useState(false);
+  const goalRef = useRef<HTMLSelectElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { accentMode, critiqueMode, motionMode, previewMode, surfaceMode, textMode, workspaceMode } = settings;
 
@@ -92,6 +116,7 @@ export default function Home() {
     const loadSettings = window.setTimeout(() => {
       setSettings(readSavedSettings());
       setDidHydrateSettings(true);
+      setDailyPrompt(getTodaysPrompt());
     }, 0);
 
     return () => window.clearTimeout(loadSettings);
@@ -112,12 +137,15 @@ export default function Home() {
 
     setError("");
     setResult(null);
+    setPreviousResult(null);
+    setDidRequestGoalSwap(false);
     setIsPreparing(true);
 
     try {
       const prepared = await prepareImage(file);
       setUpload({
         fileName: file.name,
+        imageHash: prepared.imageHash,
         previewUrl: prepared.dataUrl,
         metrics: prepared.metrics,
       });
@@ -130,12 +158,10 @@ export default function Home() {
   }
 
   function resetUpload() {
-    if (upload?.previewUrl) {
-      URL.revokeObjectURL(upload.previewUrl);
-    }
-
     setUpload(null);
     setResult(null);
+    setPreviousResult(null);
+    setDidRequestGoalSwap(false);
     setError("");
 
     if (inputRef.current) {
@@ -149,16 +175,54 @@ export default function Home() {
     }
 
     setError("");
-    setResult(null);
+    const priorResult = result;
+
+    if (priorResult) {
+      setPreviousResult(priorResult);
+      setResult(null);
+    }
+
     setIsAnalyzing(true);
 
     try {
-      setResult(analyzeWithCache({ goal, metrics: upload.metrics }));
+      const cacheKey = getAnalysisCacheKey(upload.imageHash, goal);
+      const cachedResponse = readCachedAnalysis(cacheKey);
+
+      await wait(cachedResponse ? 120 : 260);
+
+      const response =
+        cachedResponse ??
+        analyzeWithCache({
+          goal,
+          imageHash: upload.imageHash,
+          metrics: upload.metrics,
+        });
+
+      writeCachedAnalysis(cacheKey, response);
+      setResult({
+        goal,
+        response: cachedResponse ? { ...cachedResponse, cached: true } : response,
+      });
+      setDidRequestGoalSwap(false);
     } catch (caught) {
+      if (priorResult) {
+        setResult(priorResult);
+        setPreviousResult(null);
+      }
+
       setError(caught instanceof Error ? caught.message : "Analysis failed.");
     } finally {
       setIsAnalyzing(false);
     }
+  }
+
+  function tryDifferentGoal() {
+    const currentIndex = GOALS.indexOf(goal);
+    const nextGoal = GOALS[(currentIndex + 1) % GOALS.length];
+
+    setGoal(nextGoal);
+    setDidRequestGoalSwap(true);
+    window.setTimeout(() => goalRef.current?.focus(), 0);
   }
 
   return (
@@ -180,6 +244,13 @@ export default function Home() {
           </span>
         </header>
 
+        <section className="mt-5 flex flex-col gap-2 border-b border-[#eeeeeb] pb-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--accent)]">
+            Today&apos;s Prompt
+          </p>
+          <p className="max-w-2xl text-sm leading-6 text-[#4b525b] sm:text-right">{dailyPrompt}</p>
+        </section>
+
         <section className="grid flex-1 gap-9 py-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-center lg:py-12">
           <div className={["max-w-xl", isStill ? "" : "animate-[fadeIn_360ms_ease-out]"].join(" ")}>
             <h1 className="text-5xl font-semibold leading-[0.95] tracking-normal text-[#161719] sm:text-6xl lg:text-[4.85rem]">
@@ -190,8 +261,8 @@ export default function Home() {
             </p>
             <div className="mt-8 grid max-w-md grid-cols-3 gap-px overflow-hidden rounded-md border border-[#dededb] bg-[#dededb] text-sm">
               <Step label="Upload" active={Boolean(upload)} />
-              <Step label="Analyze" active={isAnalyzing || Boolean(result)} />
-              <Step label="Fix list" active={Boolean(result)} />
+              <Step label="Analyze" active={isAnalyzing || Boolean(result || previousResult)} />
+              <Step label="Fix list" active={Boolean(result || previousResult)} />
             </div>
           </div>
 
@@ -282,9 +353,13 @@ export default function Home() {
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-[#34383e]">Goal</span>
                 <select
+                  ref={goalRef}
                   className="h-12 w-full rounded-md border border-[#cfd3d7] bg-white px-3 text-sm font-semibold text-[#161719] outline-none transition hover:border-[#aeb6c0] focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10"
                   value={goal}
-                  onChange={(event) => setGoal(event.target.value as Goal)}
+                  onChange={(event) => {
+                    setGoal(event.target.value as Goal);
+                    setDidRequestGoalSwap(false);
+                  }}
                 >
                   {GOALS.map((goalOption) => (
                     <option key={goalOption} value={goalOption}>
@@ -306,14 +381,50 @@ export default function Home() {
               </button>
             </div>
 
+            {upload && (result || previousResult) ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  className="rounded-md border border-[#d8dce1] bg-white px-3 py-2 text-xs font-semibold text-[#34383e] transition hover:border-[var(--accent)] hover:text-[var(--accent)] focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/10 disabled:cursor-not-allowed disabled:opacity-60"
+                  type="button"
+                  disabled={isAnalyzing}
+                  onClick={() => {
+                    void analyze();
+                  }}
+                >
+                  Analyze Again
+                </button>
+                <button
+                  className="rounded-md bg-[var(--accent-soft)] px-3 py-2 text-xs font-semibold text-[var(--accent)] transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/10 disabled:cursor-not-allowed disabled:opacity-60"
+                  type="button"
+                  disabled={isAnalyzing}
+                  onClick={tryDifferentGoal}
+                >
+                  Try this with a different goal
+                </button>
+                {didRequestGoalSwap ? (
+                  <span className="text-xs font-medium text-[#68707b]">
+                    Goal changed to {titleCase(goal)}. Press Analyze when ready.
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+
             {error ? (
               <p className="animate-[fadeIn_220ms_ease-out] rounded-md border border-[#f1b7b7] bg-[#fff7f7] px-4 py-3 text-sm font-medium text-[#9d2525]">
                 {error}
               </p>
             ) : null}
 
-            {result ? (
-              <ResultCard compact={isCompact} mode={critiqueMode} result={result} still={isStill} />
+            {upload && (result || previousResult || isAnalyzing) ? (
+              <SessionWorkbench
+                compact={isCompact}
+                current={result}
+                isAnalyzing={isAnalyzing}
+                mode={critiqueMode}
+                previous={previousResult}
+                still={isStill}
+                upload={upload}
+              />
             ) : null}
           </div>
         </section>
@@ -356,45 +467,117 @@ function Step({ active, label }: { active: boolean; label: string }) {
   );
 }
 
-function ResultCard({
+function SessionWorkbench({
   compact,
+  current,
+  isAnalyzing,
   mode,
-  result,
+  previous,
   still,
+  upload,
 }: {
   compact: boolean;
+  current: AnalysisRecord | null;
+  isAnalyzing: boolean;
   mode: CritiqueMode;
-  result: AnalyzeResponse;
+  previous: AnalysisRecord | null;
   still: boolean;
+  upload: UploadState;
 }) {
+  const showPrevious = Boolean(previous);
+
   return (
     <section
       className={[
-        "rounded-lg border border-[#dededb] bg-white shadow-[0_22px_70px_rgba(22,23,25,0.08)]",
+        "grid gap-5 rounded-lg border border-[#dededb] bg-white shadow-[0_22px_70px_rgba(22,23,25,0.08)] lg:grid-cols-[0.82fr_1.18fr]",
         compact ? "p-4" : "p-5",
         still ? "" : "animate-[fadeIn_280ms_ease-out]",
       ].join(" ")}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-semibold">Critique</h2>
-          <p className="mt-2 text-sm leading-6 text-[#34383e]">{result.summary}</p>
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#737982]">Before</p>
+        <div className="mt-3 overflow-hidden rounded-md bg-[#f4f5f6]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            alt={`Uploaded drawing: ${upload.fileName}`}
+            className="max-h-[22rem] w-full object-contain"
+            src={upload.previewUrl}
+          />
         </div>
-        <span className="rounded-full bg-[var(--accent-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
-          {result.improvements.length} fixes
+        <p className="mt-3 truncate text-xs font-medium text-[#68707b]">{upload.fileName}</p>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#737982]">
+              After
+            </p>
+            <h2 className="mt-1 text-lg font-semibold">Feedback</h2>
+          </div>
+          {current?.response.cached ? (
+            <span className="rounded-full bg-[var(--accent-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+              Cached
+            </span>
+          ) : null}
+        </div>
+
+        {showPrevious && previous ? (
+          <FeedbackPanel label="Previous" mode={mode} record={previous} subdued />
+        ) : null}
+
+        {current ? (
+          <FeedbackPanel label={showPrevious ? "New" : "New feedback"} mode={mode} record={current} />
+        ) : isAnalyzing ? (
+          <LoadingFeedback label={showPrevious ? "New" : "New feedback"} />
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function FeedbackPanel({
+  label,
+  mode,
+  record,
+  subdued = false,
+}: {
+  label: string;
+  mode: CritiqueMode;
+  record: AnalysisRecord;
+  subdued?: boolean;
+}) {
+  const { response } = record;
+
+  return (
+    <article
+      className={[
+        "rounded-md border p-4 transition",
+        subdued ? "border-[#e7e8ea] bg-[#fafafa] opacity-85" : "border-[var(--accent)]/20 bg-white",
+      ].join(" ")}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+            {label} / {titleCase(record.goal)}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-[#34383e]">{response.summary}</p>
+        </div>
+        <span className="shrink-0 rounded-full bg-[var(--accent-soft)] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+          {response.improvements.length} fixes
         </span>
       </div>
 
-      <ol className={["mt-5", mode === "checklist" ? "space-y-2" : "space-y-4"].join(" ")}>
-        {result.improvements.map((improvement, index) => (
+      <ol className={["mt-4", mode === "checklist" ? "space-y-2" : "space-y-3"].join(" ")}>
+        {response.improvements.map((improvement, index) => (
           <li
             className={[
-              "grid gap-3 border-t border-[#ececea] sm:grid-cols-[2rem_1fr]",
+              "grid gap-3 border-t border-[#ececea] sm:grid-cols-[1.75rem_1fr]",
               mode === "checklist" ? "pt-3" : "pt-4",
             ].join(" ")}
             key={`${improvement.fix}-${index}`}
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--accent-soft)] text-sm font-semibold text-[var(--accent)]">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent-soft)] text-xs font-semibold text-[var(--accent)]">
               {index + 1}
             </span>
             <div>
@@ -420,7 +603,26 @@ function ResultCard({
           </li>
         ))}
       </ol>
-    </section>
+
+      <p className="mt-4 rounded-md border border-[var(--accent)]/15 bg-[var(--accent-soft)] px-3 py-2 text-sm font-semibold leading-6 text-[var(--accent)]">
+        {response.nextStep}
+      </p>
+    </article>
+  );
+}
+
+function LoadingFeedback({ label }: { label: string }) {
+  return (
+    <article className="rounded-md border border-[#e7e8ea] bg-[#fafafa] p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+        {label}
+      </p>
+      <div className="mt-4 space-y-3">
+        <div className="h-3 w-4/5 rounded-full bg-[#e4e7ec]" />
+        <div className="h-3 w-3/5 rounded-full bg-[#e4e7ec]" />
+        <div className="h-20 rounded-md bg-[#eef0f4]" />
+      </div>
+    </article>
   );
 }
 
@@ -649,6 +851,81 @@ function UploadIcon() {
 
 function titleCase(value: string) {
   return value.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function getTodaysPrompt(): string {
+  const now = new Date();
+  const dayKey = Math.floor(
+    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86_400_000,
+  );
+
+  return DAILY_PROMPTS[dayKey % DAILY_PROMPTS.length];
+}
+
+function getAnalysisCacheKey(imageHash: string, goal: Goal): string {
+  return `${imageHash}:${goal}`;
+}
+
+function readCachedAnalysis(cacheKey: string): AnalyzeResponse | null {
+  try {
+    const rawCache = window.localStorage.getItem(ANALYSIS_CACHE_KEY);
+
+    if (!rawCache) {
+      return null;
+    }
+
+    const cache = JSON.parse(rawCache) as Record<
+      string,
+      { expiresAt: number; response: AnalyzeResponse }
+    >;
+    const cached = cache[cacheKey];
+
+    if (!cached) {
+      return null;
+    }
+
+    if (cached.expiresAt <= Date.now()) {
+      delete cache[cacheKey];
+      window.localStorage.setItem(ANALYSIS_CACHE_KEY, JSON.stringify(cache));
+      return null;
+    }
+
+    return { ...cached.response, cached: true };
+  } catch {
+    window.localStorage.removeItem(ANALYSIS_CACHE_KEY);
+    return null;
+  }
+}
+
+function writeCachedAnalysis(cacheKey: string, response: AnalyzeResponse): void {
+  try {
+    const rawCache = window.localStorage.getItem(ANALYSIS_CACHE_KEY);
+    const cache = rawCache
+      ? (JSON.parse(rawCache) as Record<string, { expiresAt: number; response: AnalyzeResponse }>)
+      : {};
+    const entries = Object.entries(cache)
+      .filter(([, cached]) => cached.expiresAt > Date.now())
+      .slice(-(MAX_STORED_ANALYSES - 1));
+    const cleanResponse = { ...response, cached: false };
+
+    cache[cacheKey] = {
+      expiresAt: Date.now() + ANALYSIS_CACHE_TTL_MS,
+      response: cleanResponse,
+    };
+
+    window.localStorage.setItem(
+      ANALYSIS_CACHE_KEY,
+      JSON.stringify(Object.fromEntries([...entries, [cacheKey, cache[cacheKey]]])),
+    );
+  } catch {
+    window.localStorage.removeItem(ANALYSIS_CACHE_KEY);
+  }
+}
+
+function wait(duration: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, duration);
+  });
 }
 
 function readSavedSettings(): UserSettings {

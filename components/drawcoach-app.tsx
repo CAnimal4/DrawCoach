@@ -477,9 +477,131 @@ function DrawCoachMenu({
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-5 left-5 z-40">
+    <div className="fixed bottom-5 left-5 z-40 flex max-w-[calc(100vw-2.5rem)] items-end gap-3 max-sm:flex-col max-sm:items-start">
+      <div className="shrink-0">
+        {isOpen ? (
+          <div className="mb-3 max-h-[calc(100vh-5.5rem)] w-[23rem] max-w-[calc(100vw-2.5rem)] overflow-y-auto rounded-lg border border-[#d9dde3] bg-white p-4 shadow-[0_24px_80px_rgba(22,23,25,0.18)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-[#161719]">Customize DrawCoach</p>
+                <p className="mt-1 text-xs leading-5 text-[#626975]">
+                  Change the workspace feel and review app policies.
+                </p>
+              </div>
+              <button
+                aria-label="Close menu"
+                className="rounded-md px-2 py-1 text-sm font-semibold text-[#737982] transition hover:bg-[#f3f5f8] hover:text-[#161719]"
+                type="button"
+                onClick={() => setIsOpen(false)}
+              >
+                x
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-4">
+              <SettingGroup label="Accent">
+                <div className="grid grid-cols-4 gap-2">
+                  {(Object.keys(ACCENTS) as AccentMode[]).map((accentKey) => (
+                    <button
+                      aria-label={`${ACCENTS[accentKey].name} accent`}
+                      className={[
+                        "flex h-10 items-center justify-center rounded-md border bg-white transition focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/10",
+                        accentMode === accentKey ? "border-[#161719]" : "border-[#e0e4ea] hover:border-[#aeb6c0]",
+                      ].join(" ")}
+                      key={accentKey}
+                      type="button"
+                      onClick={() => setAccentMode(accentKey)}
+                    >
+                      <span
+                        className="h-5 w-5 rounded-full"
+                        style={{ backgroundColor: ACCENTS[accentKey].color }}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </SettingGroup>
+
+              <SettingGroup label="Layout">
+                <SegmentButton
+                  active={workspaceMode === "spacious"}
+                  label="Spacious"
+                  onClick={() => setWorkspaceMode("spacious")}
+                />
+                <SegmentButton
+                  active={workspaceMode === "compact"}
+                  label="Compact"
+                  onClick={() => setWorkspaceMode("compact")}
+                />
+              </SettingGroup>
+
+              <SettingGroup label="Text size">
+                <SegmentButton
+                  active={textMode === "standard"}
+                  label="Standard"
+                  onClick={() => setTextMode("standard")}
+                />
+                <SegmentButton
+                  active={textMode === "large"}
+                  label="Larger"
+                  onClick={() => setTextMode("large")}
+                />
+              </SettingGroup>
+
+              <SettingGroup label="Animation">
+                <SegmentButton
+                  active={motionMode === "gentle"}
+                  label="Gentle"
+                  onClick={() => setMotionMode("gentle")}
+                />
+                <SegmentButton
+                  active={motionMode === "still"}
+                  label="Still"
+                  onClick={() => setMotionMode("still")}
+                />
+              </SettingGroup>
+            </div>
+
+            <div className="mt-5 border-t border-[#ececea] pt-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#737982]">Policies</p>
+              <div className="mt-3 grid gap-2">
+                <MenuLink href="/privacy" label="Privacy Policy" />
+                <MenuLink href="/terms" label="Terms of Use" />
+                <MenuLink href="/cookies" label="Cookie Policy" />
+              </div>
+            </div>
+
+            <div className="mt-5 border-t border-[#ececea] pt-4">
+              <button
+                className="w-full rounded-md border border-[#d8dce1] px-3 py-2 text-left text-sm font-semibold text-[#34383e] transition hover:border-[#1946d2] hover:text-[#1946d2] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/10"
+                type="button"
+                onClick={() => setIsFeedbackOpen(true)}
+              >
+                Feedback
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        <button
+          aria-expanded={isOpen}
+          aria-label="Open DrawCoach menu"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-[#202124] shadow-[0_10px_28px_rgba(22,23,25,0.25),inset_0_0_0_1px_rgba(255,255,255,0.16)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#202124] hover:shadow-[0_14px_34px_rgba(22,23,25,0.28),inset_0_0_0_1px_rgba(255,255,255,0.18)] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/20"
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <Image
+            alt=""
+            aria-hidden="true"
+            className="h-7 w-7 object-contain brightness-0 invert"
+            height="28"
+            src={DRAWCOACH_LOGO_PATH}
+            width="28"
+          />
+        </button>
+      </div>
+
       {isFeedbackOpen ? (
-        <div className="mb-3 w-[23rem] max-w-[calc(100vw-2.5rem)] rounded-lg border border-[#d9dde3] bg-white p-4 shadow-[0_24px_80px_rgba(22,23,25,0.18)]">
+        <div className="w-[23rem] max-w-[calc(100vw-2.5rem)] rounded-lg border border-[#d9dde3] bg-white p-4 shadow-[0_24px_80px_rgba(22,23,25,0.18)] sm:max-w-[calc(100vw-27rem)]">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-semibold text-[#161719]">Send feedback</p>
@@ -545,126 +667,6 @@ function DrawCoachMenu({
           </form>
         </div>
       ) : null}
-
-      {isOpen ? (
-        <div className="mb-3 max-h-[calc(100vh-5.5rem)] w-[23rem] max-w-[calc(100vw-2.5rem)] overflow-y-auto rounded-lg border border-[#d9dde3] bg-white p-4 shadow-[0_24px_80px_rgba(22,23,25,0.18)]">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-[#161719]">Customize DrawCoach</p>
-              <p className="mt-1 text-xs leading-5 text-[#626975]">
-                Change the workspace feel and review app policies.
-              </p>
-            </div>
-            <button
-              aria-label="Close menu"
-              className="rounded-md px-2 py-1 text-sm font-semibold text-[#737982] transition hover:bg-[#f3f5f8] hover:text-[#161719]"
-              type="button"
-              onClick={() => setIsOpen(false)}
-            >
-              x
-            </button>
-          </div>
-
-          <div className="mt-4 space-y-4">
-            <SettingGroup label="Accent">
-              <div className="grid grid-cols-4 gap-2">
-                {(Object.keys(ACCENTS) as AccentMode[]).map((accentKey) => (
-                  <button
-                    aria-label={`${ACCENTS[accentKey].name} accent`}
-                    className={[
-                      "flex h-10 items-center justify-center rounded-md border bg-white transition focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/10",
-                      accentMode === accentKey ? "border-[#161719]" : "border-[#e0e4ea] hover:border-[#aeb6c0]",
-                    ].join(" ")}
-                    key={accentKey}
-                    type="button"
-                    onClick={() => setAccentMode(accentKey)}
-                  >
-                    <span
-                      className="h-5 w-5 rounded-full"
-                      style={{ backgroundColor: ACCENTS[accentKey].color }}
-                    />
-                  </button>
-                ))}
-              </div>
-            </SettingGroup>
-
-            <SettingGroup label="Layout">
-              <SegmentButton
-                active={workspaceMode === "spacious"}
-                label="Spacious"
-                onClick={() => setWorkspaceMode("spacious")}
-              />
-              <SegmentButton
-                active={workspaceMode === "compact"}
-                label="Compact"
-                onClick={() => setWorkspaceMode("compact")}
-              />
-            </SettingGroup>
-
-            <SettingGroup label="Text size">
-              <SegmentButton
-                active={textMode === "standard"}
-                label="Standard"
-                onClick={() => setTextMode("standard")}
-              />
-              <SegmentButton
-                active={textMode === "large"}
-                label="Larger"
-                onClick={() => setTextMode("large")}
-              />
-            </SettingGroup>
-
-            <SettingGroup label="Animation">
-              <SegmentButton
-                active={motionMode === "gentle"}
-                label="Gentle"
-                onClick={() => setMotionMode("gentle")}
-              />
-              <SegmentButton
-                active={motionMode === "still"}
-                label="Still"
-                onClick={() => setMotionMode("still")}
-              />
-            </SettingGroup>
-          </div>
-
-          <div className="mt-5 border-t border-[#ececea] pt-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#737982]">Policies</p>
-            <div className="mt-3 grid gap-2">
-              <MenuLink href="/privacy" label="Privacy Policy" />
-              <MenuLink href="/terms" label="Terms of Use" />
-              <MenuLink href="/cookies" label="Cookie Policy" />
-            </div>
-          </div>
-
-          <div className="mt-5 border-t border-[#ececea] pt-4">
-            <button
-              className="w-full rounded-md border border-[#d8dce1] px-3 py-2 text-left text-sm font-semibold text-[#34383e] transition hover:border-[#1946d2] hover:text-[#1946d2] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/10"
-              type="button"
-              onClick={() => setIsFeedbackOpen(true)}
-            >
-              Feedback
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      <button
-        aria-expanded={isOpen}
-        aria-label="Open DrawCoach menu"
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-[#202124] shadow-[0_10px_28px_rgba(22,23,25,0.25),inset_0_0_0_1px_rgba(255,255,255,0.16)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#202124] hover:shadow-[0_14px_34px_rgba(22,23,25,0.28),inset_0_0_0_1px_rgba(255,255,255,0.18)] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/20"
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <Image
-          alt=""
-          aria-hidden="true"
-          className="h-7 w-7 object-contain brightness-0 invert"
-          height="28"
-          src={DRAWCOACH_LOGO_PATH}
-          width="28"
-        />
-      </button>
     </div>
   );
 }

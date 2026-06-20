@@ -1,4 +1,3 @@
-
 export const GOALS = [
   "realistic",
   "simple",
@@ -31,12 +30,10 @@ export type CritiqueImprovement = {
 export type Critique = {
   summary: string;
   improvements: CritiqueImprovement[];
-  nextStep: string;
 };
 
 export type AnalyzeRequest = {
   goal: Goal;
-  imageHash: string;
   metrics: ImageMetrics;
 };
 

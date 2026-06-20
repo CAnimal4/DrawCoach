@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">DrawCoach</title>
+  <desc id="desc">A minimal drawing critique tool preview card.</desc>
+  <rect width="1200" height="630" fill="#fbfbf8"/>
+  <rect x="72" y="72" width="1056" height="486" rx="26" fill="#ffffff" stroke="#dededb" stroke-width="2"/>
+  <text x="120" y="170" fill="#161719" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="700">DrawCoach</text>
+  <text x="120" y="250" fill="#34383e" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700">Free online drawing critique</text>
+  <text x="120" y="318" fill="#5f646b" font-family="Arial, Helvetica, sans-serif" font-size="29">Upload a sketch, choose a goal, and get simple</text>
+  <text x="120" y="360" fill="#5f646b" font-family="Arial, Helvetica, sans-serif" font-size="29">fixes you can try right away.</text>
+  <path d="M812 380c42-104 151-123 211-48 22 28 33 62 34 101H734c8-20 18-37 30-53" fill="none" stroke="#202124" stroke-width="18" stroke-linecap="round"/>
+  <path d="M900 242l22 144" fill="none" stroke="#5f646b" stroke-width="11" stroke-linecap="round"/>
+  <circle cx="1012" cy="263" r="70" fill="#d7cec1"/>
+  <path d="M736 226h84M760 255h118M932 478h92M916 508h70" fill="none" stroke="#7b8085" stroke-width="6" stroke-linecap="round"/>
+</svg>

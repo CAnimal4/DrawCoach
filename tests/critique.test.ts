@@ -1,12 +1,24 @@
-
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
+import robots from "../app/robots";
+import sitemap from "../app/sitemap";
 import {
   analyzeWithCache,
   clearCritiqueCacheForTest,
   critiqueCacheSizeForTest,
   generateCritique,
 } from "../lib/critique";
+import { policies } from "../lib/legal";
+import {
+  buildShareData,
+  buildShareLinks,
+  FALLBACK_SHARE_URL,
+  PRIMARY_SHARE_URL,
+  SHARE_PROMO_DISMISSED_KEY,
+  SHARE_TEXT,
+} from "../lib/share";
+import { absoluteUrl, ROUTES, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "../lib/site";
 import { GOALS, type ImageMetrics } from "../lib/types";
 
 const baseMetrics: ImageMetrics = {
@@ -17,12 +29,6 @@ const baseMetrics: ImageMetrics = {
   edgeDensity: 0.09,
   centerOffset: 0.1,
   clutter: 0.24,
-};
-
-const baseRequest = {
-  goal: "realistic" as const,
-  imageHash: "test-image",
-  metrics: baseMetrics,
 };
 
 test("dark low-contrast metrics produce brightness and contrast advice", () => {
@@ -67,7 +73,6 @@ test("every goal returns three to five structured improvements", () => {
     const critique = generateCritique(goal, baseMetrics);
 
     assert.ok(critique.summary.length > 20);
-    assert.match(critique.nextStep, /^Next step: focus only on .+/);
     assert.ok(critique.improvements.length >= 3);
     assert.ok(critique.improvements.length <= 5);
 
@@ -82,8 +87,8 @@ test("every goal returns three to five structured improvements", () => {
 test("repeated identical input returns the cached critique", () => {
   clearCritiqueCacheForTest();
 
-  const first = analyzeWithCache(baseRequest, 1_000);
-  const second = analyzeWithCache(baseRequest, 1_100);
+  const first = analyzeWithCache({ goal: "realistic", metrics: baseMetrics }, 1_000);
+  const second = analyzeWithCache({ goal: "realistic", metrics: baseMetrics }, 1_100);
 
   assert.equal(first.cached, false);
   assert.equal(second.cached, true);
@@ -91,13 +96,54 @@ test("repeated identical input returns the cached critique", () => {
   assert.deepEqual(second.improvements, first.improvements);
 });
 
-test("cache separates identical metrics with different image hashes", () => {
-  clearCritiqueCacheForTest();
+test("share copy includes primary and fallback app links", () => {
+  const shareData = buildShareData();
+  const shareLinks = buildShareLinks();
 
-  const first = analyzeWithCache(baseRequest, 1_000);
-  const second = analyzeWithCache({ ...baseRequest, imageHash: "other-image" }, 1_100);
+  assert.equal(shareData.title, "DrawCoach");
+  assert.equal(shareData.url, PRIMARY_SHARE_URL);
+  assert.match(SHARE_TEXT, /drawcoach\.vercel\.app/);
+  assert.match(SHARE_TEXT, /canimal4\.github\.io\/DrawCoach/);
+  assert.match(shareLinks.mailto, /^mailto:/);
+  assert.match(shareLinks.sms, /^sms:/);
+  assert.equal(SHARE_PROMO_DISMISSED_KEY, "drawcoach-share-promo-dismissed");
+  assert.equal(FALLBACK_SHARE_URL, "https://canimal4.github.io/DrawCoach/");
+});
 
-  assert.equal(first.cached, false);
-  assert.equal(second.cached, false);
-  assert.equal(critiqueCacheSizeForTest(), 2);
+test("legal policies include required MVP and future-change language", () => {
+  const privacy = JSON.stringify(policies.privacy).toLowerCase();
+  const terms = JSON.stringify(policies.terms).toLowerCase();
+  const cookies = JSON.stringify(policies.cookies).toLowerCase();
+
+  assert.match(privacy, /no accounts/);
+  assert.match(privacy, /uploaded drawings/);
+  assert.match(privacy, /local browser storage/);
+  assert.match(terms, /more limited/);
+  assert.match(terms, /subscription/);
+  assert.match(cookies, /advertising|tracking/);
+  assert.match(cookies, /localstorage|local storage/);
+});
+
+test("site metadata routes expose clean canonical URLs", () => {
+  const paths = ROUTES.map((route) => route.path);
+  const sitemapEntries = sitemap();
+  const robotsFile = robots();
+
+  assert.deepEqual(paths, ["/", "/about", "/privacy", "/terms", "/cookies"]);
+  assert.equal(SITE_TITLE, "DrawCoach - Free Online Drawing Critique Tool");
+  assert.match(SITE_DESCRIPTION, /free online tool/i);
+  assert.equal(absoluteUrl("/about"), `${SITE_URL}/about/`);
+  assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/about/`));
+  assert.equal(robotsFile.sitemap, `${SITE_URL}/sitemap.xml`);
+});
+
+test("about page contains factual AI-readable answers", () => {
+  const aboutSource = readFileSync(new URL("../app/about/page.tsx", import.meta.url), "utf8");
+
+  assert.match(aboutSource, /What is DrawCoach\?/);
+  assert.match(aboutSource, /How does DrawCoach work\?/);
+  assert.match(aboutSource, /free online tool/i);
+  assert.match(aboutSource, /simple visual-rule metrics/i);
+  assert.match(aboutSource, /FAQPage/);
+  assert.doesNotMatch(aboutSource, /revolutionary|world-class|magic/i);
 });

@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { GET as aiTxt } from "../app/ai.txt/route";
+import { GET as llmsTxt } from "../app/llms.txt/route";
 import robots from "../app/robots";
 import sitemap from "../app/sitemap";
 import {
@@ -134,16 +136,35 @@ test("site metadata routes expose clean canonical URLs", () => {
   assert.match(SITE_DESCRIPTION, /free online tool/i);
   assert.equal(absoluteUrl("/about"), `${SITE_URL}/about/`);
   assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/about/`));
+  assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/llms.txt`));
+  assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/ai.txt`));
   assert.equal(robotsFile.sitemap, `${SITE_URL}/sitemap.xml`);
 });
 
 test("about page contains factual AI-readable answers", () => {
   const aboutSource = readFileSync(new URL("../app/about/page.tsx", import.meta.url), "utf8");
+  const structuredDataSource = readFileSync(
+    new URL("../lib/structured-data.ts", import.meta.url),
+    "utf8",
+  );
 
-  assert.match(aboutSource, /What is DrawCoach\?/);
-  assert.match(aboutSource, /How does DrawCoach work\?/);
-  assert.match(aboutSource, /free online tool/i);
-  assert.match(aboutSource, /simple visual-rule metrics/i);
-  assert.match(aboutSource, /FAQPage/);
-  assert.doesNotMatch(aboutSource, /revolutionary|world-class|magic/i);
+  assert.match(structuredDataSource, /What is DrawCoach\?/);
+  assert.match(structuredDataSource, /How does DrawCoach work\?/);
+  assert.match(structuredDataSource, /free online tool/i);
+  assert.match(structuredDataSource, /simple visual-rule metrics/i);
+  assert.match(structuredDataSource, /FAQPage/);
+  assert.match(aboutSource, /FAQ_ITEMS/);
+  assert.doesNotMatch(`${aboutSource}\n${structuredDataSource}`, /revolutionary|world-class|magic/i);
+});
+
+test("AI text endpoints describe the app clearly", async () => {
+  const llmsBody = await llmsTxt().text();
+  const aiBody = await aiTxt().text();
+
+  assert.match(llmsBody, /free online drawing critique/i);
+  assert.match(llmsBody, /No accounts/i);
+  assert.match(llmsBody, /Sitemap: https:\/\/drawcoach\.vercel\.app\/sitemap\.xml/i);
+  assert.match(aiBody, /Category: Free online drawing critique tool/i);
+  assert.match(aiBody, /Image generation: Not offered/i);
+  assert.match(aiBody, /Robots: https:\/\/drawcoach\.vercel\.app\/robots\.txt/i);
 });

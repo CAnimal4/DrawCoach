@@ -4,10 +4,27 @@ import { absoluteUrl, ROUTES } from "@/lib/site";
 export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return ROUTES.map((route) => ({
+  const lastModified = new Date("2026-06-20");
+  const pageRoutes = ROUTES.map((route) => ({
     url: absoluteUrl(route.path),
-    lastModified: new Date("2026-06-20"),
-    changeFrequency: route.path === "/" ? "weekly" : "monthly",
+    lastModified,
+    changeFrequency: route.path === "/" ? ("weekly" as const) : ("monthly" as const),
     priority: route.priority,
   }));
+
+  return [
+    ...pageRoutes,
+    {
+      url: absoluteUrl("/llms.txt"),
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.3,
+    },
+    {
+      url: absoluteUrl("/ai.txt"),
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.3,
+    },
+  ];
 }

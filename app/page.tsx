@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DrawCoachApp } from "@/components/drawcoach-app";
 import { absoluteUrl, OG_IMAGE_URL, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/site";
+import { drawCoachJsonLd } from "@/lib/structured-data";
 
 export const dynamic = "force-static";
 
@@ -32,5 +33,13 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return <DrawCoachApp />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(drawCoachJsonLd()) }}
+      />
+      <DrawCoachApp />
+    </>
+  );
 }

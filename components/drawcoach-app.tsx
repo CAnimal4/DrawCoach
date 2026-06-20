@@ -11,7 +11,6 @@ import {
 } from "@/lib/share";
 import { prepareImage } from "@/lib/client-image";
 import { analyzeWithCache } from "@/lib/critique";
-import { buildFeedbackMailto } from "@/lib/feedback";
 import { DRAWCOACH_LOGO_PATH } from "@/lib/site";
 import { GOALS, type AnalyzeResponse, type Goal, type ImageMetrics } from "@/lib/types";
 
@@ -472,233 +471,117 @@ function DrawCoachMenu({
   textMode: TextMode;
   workspaceMode: WorkspaceMode;
 }) {
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-  const [feedbackText, setFeedbackText] = useState("");
-  const [feedbackReplyEmail, setFeedbackReplyEmail] = useState("");
-  const [feedbackStatus, setFeedbackStatus] = useState("");
-
-  function openFeedbackDraft() {
-    const mailto = buildFeedbackMailto({
-      feedback: feedbackText,
-      replyEmail: feedbackReplyEmail,
-      pageUrl: window.location.href,
-      userAgent: window.navigator.userAgent,
-      viewport: `${window.innerWidth}x${window.innerHeight}`,
-      timestamp: new Date().toISOString(),
-    });
-
-    window.location.href = mailto;
-    setFeedbackStatus("Email draft opened; send it from your mail app.");
-  }
-
   return (
-    <div className="fixed bottom-5 left-5 z-40 flex max-w-[calc(100vw-2.5rem)] items-end gap-3 max-sm:flex-col max-sm:items-start">
-      <div className="shrink-0">
-        {isOpen ? (
-          <div className="mb-3 max-h-[calc(100vh-5.5rem)] w-[23rem] max-w-[calc(100vw-2.5rem)] overflow-y-auto rounded-lg border border-[#d9dde3] bg-white p-4 shadow-[0_24px_80px_rgba(22,23,25,0.18)]">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-[#161719]">Customize DrawCoach</p>
-                <p className="mt-1 text-xs leading-5 text-[#626975]">
-                  Change the workspace feel and review app policies.
-                </p>
-              </div>
-              <button
-                aria-label="Close menu"
-                className="rounded-md px-2 py-1 text-sm font-semibold text-[#737982] transition hover:bg-[#f3f5f8] hover:text-[#161719]"
-                type="button"
-                onClick={() => setIsOpen(false)}
-              >
-                x
-              </button>
-            </div>
-
-            <div className="mt-4 space-y-4">
-              <SettingGroup label="Accent">
-                <div className="grid grid-cols-4 gap-2">
-                  {(Object.keys(ACCENTS) as AccentMode[]).map((accentKey) => (
-                    <button
-                      aria-label={`${ACCENTS[accentKey].name} accent`}
-                      className={[
-                        "flex h-10 items-center justify-center rounded-md border bg-white transition focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/10",
-                        accentMode === accentKey ? "border-[#161719]" : "border-[#e0e4ea] hover:border-[#aeb6c0]",
-                      ].join(" ")}
-                      key={accentKey}
-                      type="button"
-                      onClick={() => setAccentMode(accentKey)}
-                    >
-                      <span
-                        className="h-5 w-5 rounded-full"
-                        style={{ backgroundColor: ACCENTS[accentKey].color }}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </SettingGroup>
-
-              <SettingGroup label="Layout">
-                <SegmentButton
-                  active={workspaceMode === "spacious"}
-                  label="Spacious"
-                  onClick={() => setWorkspaceMode("spacious")}
-                />
-                <SegmentButton
-                  active={workspaceMode === "compact"}
-                  label="Compact"
-                  onClick={() => setWorkspaceMode("compact")}
-                />
-              </SettingGroup>
-
-              <SettingGroup label="Text size">
-                <SegmentButton
-                  active={textMode === "standard"}
-                  label="Standard"
-                  onClick={() => setTextMode("standard")}
-                />
-                <SegmentButton
-                  active={textMode === "large"}
-                  label="Larger"
-                  onClick={() => setTextMode("large")}
-                />
-              </SettingGroup>
-
-              <SettingGroup label="Animation">
-                <SegmentButton
-                  active={motionMode === "gentle"}
-                  label="Gentle"
-                  onClick={() => setMotionMode("gentle")}
-                />
-                <SegmentButton
-                  active={motionMode === "still"}
-                  label="Still"
-                  onClick={() => setMotionMode("still")}
-                />
-              </SettingGroup>
-            </div>
-
-            <div className="mt-5 border-t border-[#ececea] pt-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#737982]">Policies</p>
-              <div className="mt-3 grid gap-2">
-                <MenuLink href="/privacy" label="Privacy Policy" />
-                <MenuLink href="/terms" label="Terms of Use" />
-                <MenuLink href="/cookies" label="Cookie Policy" />
-              </div>
-            </div>
-
-            <div className="mt-5 border-t border-[#ececea] pt-4">
-              <button
-                className="w-full rounded-md border border-[#d8dce1] px-3 py-2 text-left text-sm font-semibold text-[#34383e] transition hover:border-[#1946d2] hover:text-[#1946d2] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/10"
-                type="button"
-                onClick={() => setIsFeedbackOpen(true)}
-              >
-                Feedback
-              </button>
-            </div>
-          </div>
-        ) : null}
-
-        <button
-          aria-expanded={isOpen}
-          aria-label="Open DrawCoach menu"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-[#202124] shadow-[0_10px_28px_rgba(22,23,25,0.25),inset_0_0_0_1px_rgba(255,255,255,0.16)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#202124] hover:shadow-[0_14px_34px_rgba(22,23,25,0.28),inset_0_0_0_1px_rgba(255,255,255,0.18)] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/20"
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <Image
-            alt=""
-            aria-hidden="true"
-            className="h-7 w-7 object-contain brightness-0 invert"
-            height="28"
-            src={DRAWCOACH_LOGO_PATH}
-            width="28"
-          />
-        </button>
-      </div>
-
-      {isFeedbackOpen ? (
-        <div className="w-[23rem] max-w-[calc(100vw-2.5rem)] rounded-lg border border-[#d9dde3] bg-white p-4 shadow-[0_24px_80px_rgba(22,23,25,0.18)] sm:max-w-[calc(100vw-27rem)]">
+    <div className="fixed bottom-5 left-5 z-40">
+      {isOpen ? (
+        <div className="mb-3 max-h-[calc(100vh-5.5rem)] w-[23rem] max-w-[calc(100vw-2.5rem)] overflow-y-auto rounded-lg border border-[#d9dde3] bg-white p-4 shadow-[0_24px_80px_rgba(22,23,25,0.18)]">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-[#161719]">Feedback</p>
+              <p className="text-sm font-semibold text-[#161719]">Customize DrawCoach</p>
               <p className="mt-1 text-xs leading-5 text-[#626975]">
-                Opens your email app with a draft you can review and send.
+                Change the workspace feel and review app policies.
               </p>
             </div>
             <button
-              aria-label="Close feedback"
+              aria-label="Close menu"
               className="rounded-md px-2 py-1 text-sm font-semibold text-[#737982] transition hover:bg-[#f3f5f8] hover:text-[#161719]"
               type="button"
-              onClick={() => setIsFeedbackOpen(false)}
+              onClick={() => setIsOpen(false)}
             >
               x
             </button>
           </div>
 
-          <form
-            className="mt-4 space-y-3"
-            onSubmit={(event) => {
-              event.preventDefault();
-              openFeedbackDraft();
-            }}
-          >
-            <label className="block">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-[#737982]">
-                Feedback
-              </span>
-              <textarea
-                className="min-h-28 w-full resize-y rounded-md border border-[#d8dce1] bg-white px-3 py-2 text-sm leading-6 text-[#161719] outline-none transition placeholder:text-[#9aa1aa] focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10"
-                name="DrawCoach feedback"
-                placeholder="What should DrawCoach improve?"
-                required
-                value={feedbackText}
-                onChange={(event) => {
-                  setFeedbackText(event.target.value);
-                  setFeedbackStatus("");
-                }}
-              />
-            </label>
+          <div className="mt-4 space-y-4">
+            <SettingGroup label="Accent">
+              <div className="grid grid-cols-4 gap-2">
+                {(Object.keys(ACCENTS) as AccentMode[]).map((accentKey) => (
+                  <button
+                    aria-label={`${ACCENTS[accentKey].name} accent`}
+                    className={[
+                      "flex h-10 items-center justify-center rounded-md border bg-white transition focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/10",
+                      accentMode === accentKey ? "border-[#161719]" : "border-[#e0e4ea] hover:border-[#aeb6c0]",
+                    ].join(" ")}
+                    key={accentKey}
+                    type="button"
+                    onClick={() => setAccentMode(accentKey)}
+                  >
+                    <span
+                      className="h-5 w-5 rounded-full"
+                      style={{ backgroundColor: ACCENTS[accentKey].color }}
+                    />
+                  </button>
+                ))}
+              </div>
+            </SettingGroup>
 
-            <label className="block">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-[#737982]">
-                Reply email optional
-              </span>
-              <input
-                className="h-10 w-full rounded-md border border-[#d8dce1] bg-white px-3 text-sm text-[#161719] outline-none transition placeholder:text-[#9aa1aa] focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10"
-                name="Reply email"
-                placeholder="you@example.com"
-                type="email"
-                value={feedbackReplyEmail}
-                onChange={(event) => {
-                  setFeedbackReplyEmail(event.target.value);
-                  setFeedbackStatus("");
-                }}
+            <SettingGroup label="Layout">
+              <SegmentButton
+                active={workspaceMode === "spacious"}
+                label="Spacious"
+                onClick={() => setWorkspaceMode("spacious")}
               />
-            </label>
+              <SegmentButton
+                active={workspaceMode === "compact"}
+                label="Compact"
+                onClick={() => setWorkspaceMode("compact")}
+              />
+            </SettingGroup>
 
-            <div className="flex items-center justify-end gap-2 pt-1">
-              <button
-                className="rounded-md border border-[#d8dce1] bg-white px-3 py-2 text-sm font-semibold text-[#34383e] transition hover:border-[#1946d2] hover:text-[#1946d2] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/10"
-                type="button"
-                onClick={() => setIsFeedbackOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/20"
-                type="submit"
-              >
-                Open email draft
-              </button>
+            <SettingGroup label="Text size">
+              <SegmentButton
+                active={textMode === "standard"}
+                label="Standard"
+                onClick={() => setTextMode("standard")}
+              />
+              <SegmentButton
+                active={textMode === "large"}
+                label="Larger"
+                onClick={() => setTextMode("large")}
+              />
+            </SettingGroup>
+
+            <SettingGroup label="Animation">
+              <SegmentButton
+                active={motionMode === "gentle"}
+                label="Gentle"
+                onClick={() => setMotionMode("gentle")}
+              />
+              <SegmentButton
+                active={motionMode === "still"}
+                label="Still"
+                onClick={() => setMotionMode("still")}
+              />
+            </SettingGroup>
+          </div>
+
+          <div className="mt-5 border-t border-[#ececea] pt-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#737982]">Policies</p>
+            <div className="mt-3 grid gap-2">
+              <MenuLink href="/privacy" label="Privacy Policy" />
+              <MenuLink href="/terms" label="Terms of Use" />
+              <MenuLink href="/cookies" label="Cookie Policy" />
             </div>
-
-            {feedbackStatus ? (
-              <p className="rounded-md border border-[#d9dfee] bg-[#f7f9ff] px-3 py-2 text-xs font-medium leading-5 text-[#1946d2]">
-                {feedbackStatus}
-              </p>
-            ) : null}
-          </form>
+          </div>
         </div>
       ) : null}
+
+      <button
+        aria-expanded={isOpen}
+        aria-label="Open DrawCoach menu"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-[#202124] shadow-[0_10px_28px_rgba(22,23,25,0.25),inset_0_0_0_1px_rgba(255,255,255,0.16)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#202124] hover:shadow-[0_14px_34px_rgba(22,23,25,0.28),inset_0_0_0_1px_rgba(255,255,255,0.18)] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/20"
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <Image
+          alt=""
+          aria-hidden="true"
+          className="h-7 w-7 object-contain brightness-0 invert"
+          height="28"
+          src={DRAWCOACH_LOGO_PATH}
+          width="28"
+        />
+      </button>
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
 } from "@/lib/share";
 import { prepareImage } from "@/lib/client-image";
 import { analyzeWithCache } from "@/lib/critique";
+import { buildResultShareText } from "@/lib/result-share";
 import { DRAWCOACH_LOGO_PATH } from "@/lib/site";
 import { GOALS, type AnalyzeResponse, type Goal, type ImageMetrics } from "@/lib/types";
 
@@ -234,11 +235,19 @@ export function DrawCoachApp() {
         <section className="grid flex-1 gap-10 py-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-14">
           <div className={["max-w-xl", isStill ? "" : "animate-[fadeIn_360ms_ease-out]"].join(" ")}>
             <h1 className="text-5xl font-semibold leading-[0.95] tracking-normal text-[#161719] sm:text-6xl lg:text-7xl">
-              Clear next steps for better drawings.
+              Free drawing feedback for better sketches.
             </h1>
             <p className="mt-6 max-w-md text-base leading-7 text-[#5f646b] sm:text-lg">
               Upload a sketch, choose a goal, and get simple fixes you can try right away.
             </p>
+            <div className="mt-7 max-w-md border-t border-[#e7e8e5] pt-5">
+              <h2 className="text-base font-semibold text-[#161719]">
+                Improve sketches online with a fast drawing critique tool.
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-[#5f646b]">
+                DrawCoach focuses on shading, composition, detail, and clutter so your next drawing pass has a clear direction.
+              </p>
+            </div>
             <div className="mt-8 grid max-w-md grid-cols-3 gap-px overflow-hidden rounded-md border border-[#dededb] bg-[#dededb] text-sm">
               <Step label="Upload" active={Boolean(upload)} />
               <Step label="Analyze" active={isAnalyzing || Boolean(result)} />
@@ -360,6 +369,23 @@ export function DrawCoachApp() {
             {result ? <ResultCard result={result} /> : null}
           </div>
         </section>
+
+        <footer className="border-t border-[#dededb] py-5 text-sm">
+          <nav aria-label="Drawing resources" className="flex flex-wrap gap-4">
+            <Link
+              className="font-medium text-[#59606a] transition hover:text-[var(--accent)]"
+              href="/drawing-feedback"
+            >
+              Free Drawing Feedback
+            </Link>
+            <Link
+              className="font-medium text-[#59606a] transition hover:text-[var(--accent)]"
+              href="/how-to-improve-drawings"
+            >
+              How to Improve Drawings
+            </Link>
+          </nav>
+        </footer>
       </div>
 
       <DrawCoachMenu
@@ -428,10 +454,37 @@ function ShareFallback({
 }
 
 function ResultCard({ result }: { result: AnalyzeResponse }) {
+  const [copyStatus, setCopyStatus] = useState("");
+
+  async function copyResult() {
+    try {
+      await navigator.clipboard.writeText(buildResultShareText(result));
+      setCopyStatus("Result copied.");
+    } catch {
+      setCopyStatus("Copy failed. Please try again.");
+    }
+  }
+
   return (
     <section className="animate-[fadeIn_280ms_ease-out] rounded-lg border border-[#dededb] bg-white p-5 shadow-[0_22px_70px_rgba(22,23,25,0.08)]">
-      <h2 className="text-lg font-semibold">Critique</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">Drawing critique result</h2>
+        <button
+          className="rounded-md border border-[#d8dce1] px-3 py-2 text-xs font-semibold text-[#34383e] transition hover:border-[#1946d2] hover:text-[#1946d2] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/10"
+          type="button"
+          onClick={() => {
+            void copyResult();
+          }}
+        >
+          Copy Result
+        </button>
+      </div>
       <p className="mt-3 text-sm leading-6 text-[#34383e]">{result.summary}</p>
+      {copyStatus ? (
+        <p className="mt-3 rounded-md border border-[#d9dfee] bg-[#f7f9ff] px-3 py-2 text-xs font-medium text-[#1946d2]">
+          {copyStatus}
+        </p>
+      ) : null}
 
       <ol className="mt-5 space-y-4">
         {result.improvements.map((improvement, index) => (

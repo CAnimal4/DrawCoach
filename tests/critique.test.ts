@@ -11,6 +11,7 @@ import {
   critiqueCacheSizeForTest,
   generateCritique,
 } from "../lib/critique";
+import { buildResultShareText } from "../lib/result-share";
 import { policies } from "../lib/legal";
 import {
   buildShareData,
@@ -112,6 +113,19 @@ test("share copy includes primary and fallback app links", () => {
   assert.equal(FALLBACK_SHARE_URL, "https://canimal4.github.io/DrawCoach/");
 });
 
+test("result share text includes the first three dynamic fixes", () => {
+  const critique = generateCritique("realistic", baseMetrics);
+  const shareText = buildResultShareText(critique);
+
+  assert.match(shareText, /^I improved my drawing using DrawCoach:/);
+  assert.match(shareText, /Try it here: drawcoach\.vercel\.app/);
+  assert.equal((shareText.match(/^- /gm) ?? []).length, 3);
+
+  for (const improvement of critique.improvements.slice(0, 3)) {
+    assert.match(shareText, new RegExp(improvement.fix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+});
+
 test("legal policies include required MVP and future-change language", () => {
   const privacy = JSON.stringify(policies.privacy).toLowerCase();
   const terms = JSON.stringify(policies.terms).toLowerCase();
@@ -131,11 +145,21 @@ test("site metadata routes expose clean canonical URLs", () => {
   const sitemapEntries = sitemap();
   const robotsFile = robots();
 
-  assert.deepEqual(paths, ["/", "/about", "/privacy", "/terms", "/cookies"]);
-  assert.equal(SITE_TITLE, "DrawCoach - Free Online Drawing Critique Tool");
-  assert.match(SITE_DESCRIPTION, /free online tool/i);
+  assert.deepEqual(paths, [
+    "/",
+    "/about",
+    "/drawing-feedback",
+    "/how-to-improve-drawings",
+    "/privacy",
+    "/terms",
+    "/cookies",
+  ]);
+  assert.equal(SITE_TITLE, "Free Drawing Feedback Tool | Improve Your Sketches Instantly");
+  assert.match(SITE_DESCRIPTION, /instant feedback on shading, composition, and detail/i);
   assert.equal(absoluteUrl("/about"), `${SITE_URL}/about/`);
   assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/about/`));
+  assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/drawing-feedback/`));
+  assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/how-to-improve-drawings/`));
   assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/llms.txt`));
   assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/ai.txt`));
   assert.equal(robotsFile.sitemap, `${SITE_URL}/sitemap.xml`);
@@ -143,6 +167,15 @@ test("site metadata routes expose clean canonical URLs", () => {
 
 test("about page contains factual AI-readable answers", () => {
   const aboutSource = readFileSync(new URL("../app/about/page.tsx", import.meta.url), "utf8");
+  const homeSource = readFileSync(new URL("../components/drawcoach-app.tsx", import.meta.url), "utf8");
+  const drawingFeedbackSource = readFileSync(
+    new URL("../app/drawing-feedback/page.tsx", import.meta.url),
+    "utf8",
+  );
+  const improveDrawingsSource = readFileSync(
+    new URL("../app/how-to-improve-drawings/page.tsx", import.meta.url),
+    "utf8",
+  );
   const structuredDataSource = readFileSync(
     new URL("../lib/structured-data.ts", import.meta.url),
     "utf8",
@@ -154,7 +187,19 @@ test("about page contains factual AI-readable answers", () => {
   assert.match(structuredDataSource, /simple visual-rule metrics/i);
   assert.match(structuredDataSource, /FAQPage/);
   assert.match(aboutSource, /FAQ_ITEMS/);
-  assert.doesNotMatch(`${aboutSource}\n${structuredDataSource}`, /revolutionary|world-class|magic/i);
+  assert.match(homeSource, /Free Drawing Feedback/);
+  assert.match(homeSource, /How to Improve Drawings/);
+  assert.match(drawingFeedbackSource, /free drawing feedback/i);
+  assert.match(drawingFeedbackSource, /improve sketches online/i);
+  assert.match(drawingFeedbackSource, /drawing critique tool/i);
+  assert.match(drawingFeedbackSource, /art improvement tool/i);
+  assert.match(improveDrawingsSource, /flat shading/i);
+  assert.match(improveDrawingsSource, /Bad proportions/i);
+  assert.match(improveDrawingsSource, /Messy composition/i);
+  assert.doesNotMatch(
+    `${aboutSource}\n${structuredDataSource}\n${drawingFeedbackSource}\n${improveDrawingsSource}`,
+    /revolutionary|world-class|magic/i,
+  );
 });
 
 test("AI text endpoints describe the app clearly", async () => {

@@ -5,9 +5,9 @@ export const OG_IMAGE_PATH = "/og-image.svg";
 export const PUBLIC_BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 export const DRAWCOACH_LOGO_PATH = `${PUBLIC_BASE_PATH}/drawcoach-logo.png`;
 
-export const SITE_TITLE = "DrawCoach - Free Online Drawing Critique Tool";
+export const SITE_TITLE = "Free Drawing Feedback Tool | Improve Your Sketches Instantly";
 export const SITE_DESCRIPTION =
-  "DrawCoach is a free online tool that reviews an uploaded drawing with simple visual rules and returns short, beginner-friendly improvement steps.";
+  "Upload a drawing and get instant feedback on shading, composition, and detail to improve your art skills.";
 
 export const SITE_KEYWORDS = [
   "DrawCoach",
@@ -33,6 +33,20 @@ export const ROUTES = [
     description:
       "Learn what DrawCoach is, how it analyzes drawings, what it does with uploads, and what kinds of feedback the free online tool provides.",
     priority: 0.9,
+  },
+  {
+    path: "/drawing-feedback",
+    title: "Free Drawing Feedback Online - DrawCoach",
+    description:
+      "Use DrawCoach as a free drawing feedback and drawing critique tool to improve sketches online with clear, beginner-friendly next steps.",
+    priority: 0.85,
+  },
+  {
+    path: "/how-to-improve-drawings",
+    title: "How to Improve Drawings - Shading, Proportion, and Composition",
+    description:
+      "Learn simple ways to improve drawings by fixing flat shading, bad proportions, and messy composition, then try DrawCoach for instant practice feedback.",
+    priority: 0.8,
   },
   {
     path: "/privacy",

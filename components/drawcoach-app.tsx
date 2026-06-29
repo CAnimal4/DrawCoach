@@ -8,6 +8,7 @@ import {
   buildShareData,
   buildShareLinks,
   SHARE_PROMO_DISMISSED_KEY,
+  SHARE_TEXT,
 } from "@/lib/share";
 import { prepareImage } from "@/lib/client-image";
 import { analyzeWithCache } from "@/lib/critique";
@@ -133,6 +134,14 @@ export function DrawCoachApp() {
           return;
         }
       }
+    }
+
+    try {
+      await navigator.clipboard.writeText(SHARE_TEXT);
+      setShareMessage("DrawCoach link copied.");
+      return;
+    } catch {
+      // Keep going to the visible email/text fallback.
     }
 
     setShareFallbackOpen(true);
@@ -384,6 +393,12 @@ export function DrawCoachApp() {
             >
               How to Improve Drawings
             </Link>
+            <Link
+              className="font-medium text-[#59606a] transition hover:text-[var(--accent)]"
+              href="/why-does-my-drawing-look-flat"
+            >
+              Why Drawings Look Flat
+            </Link>
           </nav>
         </footer>
       </div>
@@ -454,14 +469,31 @@ function ShareFallback({
 }
 
 function ResultCard({ result }: { result: AnalyzeResponse }) {
-  const [copyStatus, setCopyStatus] = useState("");
+  const [shareStatus, setShareStatus] = useState("");
 
-  async function copyResult() {
+  async function shareResult() {
+    const text = buildResultShareText(result);
+    setShareStatus("");
+
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share(buildShareData(text));
+        setShareStatus("Result shared.");
+        return;
+      } catch (caught) {
+        if (caught instanceof DOMException && caught.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
     try {
-      await navigator.clipboard.writeText(buildResultShareText(result));
-      setCopyStatus("Result copied.");
+      await navigator.clipboard.writeText(text);
+      setShareStatus("Share text copied.");
     } catch {
-      setCopyStatus("Copy failed. Please try again.");
+      const links = buildShareLinks(text);
+      window.location.href = links.mailto;
+      setShareStatus("Email draft opened.");
     }
   }
 
@@ -473,16 +505,16 @@ function ResultCard({ result }: { result: AnalyzeResponse }) {
           className="rounded-md border border-[#d8dce1] px-3 py-2 text-xs font-semibold text-[#34383e] transition hover:border-[#1946d2] hover:text-[#1946d2] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/10"
           type="button"
           onClick={() => {
-            void copyResult();
+            void shareResult();
           }}
         >
-          Copy Result
+          Share Result
         </button>
       </div>
       <p className="mt-3 text-sm leading-6 text-[#34383e]">{result.summary}</p>
-      {copyStatus ? (
+      {shareStatus ? (
         <p className="mt-3 rounded-md border border-[#d9dfee] bg-[#f7f9ff] px-3 py-2 text-xs font-medium text-[#1946d2]">
-          {copyStatus}
+          {shareStatus}
         </p>
       ) : null}
 

@@ -98,12 +98,38 @@ export default function HowToImproveDrawingsPage() {
             small fix: darken one shadow group, adjust one proportion, simplify one busy area, or
             clarify one focal point.
           </p>
+          <div className="mt-5 rounded-lg border border-[#dededb] bg-white p-5">
+            <h3 className="text-base font-semibold">How DrawCoach can help</h3>
+            <p className="mt-2 text-sm leading-7 text-[#555c65]">
+              DrawCoach turns a sketch into a short list of beginner-friendly improvements. Instead
+              of asking you to solve every art problem at once, it gives a summary, a few specific
+              fixes, and one next step to focus on.
+            </p>
+          </div>
           <Link
             className="mt-7 inline-flex rounded-md bg-[#1946d2] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-90 focus:outline-none focus:ring-4 focus:ring-[#1946d2]/20"
             href="/"
           >
             Get free drawing feedback
           </Link>
+        </section>
+
+        <section className="border-t border-[#e7e8e5] py-8">
+          <h2 className="text-2xl font-semibold">A quick improvement checklist</h2>
+          <ul className="mt-5 space-y-3 text-sm leading-7 text-[#555c65]">
+            <li>
+              <strong className="text-[#161719]">Squint at the drawing.</strong> If everything has
+              the same value, choose one area to darken.
+            </li>
+            <li>
+              <strong className="text-[#161719]">Compare the largest shapes.</strong> Fix the big
+              width and height relationships before polishing details.
+            </li>
+            <li>
+              <strong className="text-[#161719]">Pick one focal point.</strong> Let the most
+              important area have the sharpest contrast and cleanest edges.
+            </li>
+          </ul>
         </section>
       </div>
     </main>

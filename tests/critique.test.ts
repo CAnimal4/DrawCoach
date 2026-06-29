@@ -150,6 +150,7 @@ test("site metadata routes expose clean canonical URLs", () => {
     "/about",
     "/drawing-feedback",
     "/how-to-improve-drawings",
+    "/why-does-my-drawing-look-flat",
     "/privacy",
     "/terms",
     "/cookies",
@@ -160,6 +161,7 @@ test("site metadata routes expose clean canonical URLs", () => {
   assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/about/`));
   assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/drawing-feedback/`));
   assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/how-to-improve-drawings/`));
+  assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/why-does-my-drawing-look-flat/`));
   assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/llms.txt`));
   assert.ok(sitemapEntries.some((entry) => entry.url === `${SITE_URL}/ai.txt`));
   assert.equal(robotsFile.sitemap, `${SITE_URL}/sitemap.xml`);
@@ -176,6 +178,10 @@ test("about page contains factual AI-readable answers", () => {
     new URL("../app/how-to-improve-drawings/page.tsx", import.meta.url),
     "utf8",
   );
+  const flatDrawingSource = readFileSync(
+    new URL("../app/why-does-my-drawing-look-flat/page.tsx", import.meta.url),
+    "utf8",
+  );
   const structuredDataSource = readFileSync(
     new URL("../lib/structured-data.ts", import.meta.url),
     "utf8",
@@ -189,6 +195,7 @@ test("about page contains factual AI-readable answers", () => {
   assert.match(aboutSource, /FAQ_ITEMS/);
   assert.match(homeSource, /Free Drawing Feedback/);
   assert.match(homeSource, /How to Improve Drawings/);
+  assert.match(homeSource, /Why Drawings Look Flat/);
   assert.match(drawingFeedbackSource, /free drawing feedback/i);
   assert.match(drawingFeedbackSource, /improve sketches online/i);
   assert.match(drawingFeedbackSource, /drawing critique tool/i);
@@ -196,8 +203,11 @@ test("about page contains factual AI-readable answers", () => {
   assert.match(improveDrawingsSource, /flat shading/i);
   assert.match(improveDrawingsSource, /Bad proportions/i);
   assert.match(improveDrawingsSource, /Messy composition/i);
+  assert.match(flatDrawingSource, /Why does my drawing look flat/i);
+  assert.match(flatDrawingSource, /line weight/i);
+  assert.match(flatDrawingSource, /How DrawCoach can help with flat drawings/i);
   assert.doesNotMatch(
-    `${aboutSource}\n${structuredDataSource}\n${drawingFeedbackSource}\n${improveDrawingsSource}`,
+    `${aboutSource}\n${structuredDataSource}\n${drawingFeedbackSource}\n${improveDrawingsSource}\n${flatDrawingSource}`,
     /revolutionary|world-class|magic/i,
   );
 });

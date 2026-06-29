@@ -119,6 +119,37 @@ export default function DrawingFeedbackPage() {
             stuck.
           </p>
         </section>
+
+        <section className="border-t border-[#e7e8e5] py-8">
+          <h2 className="text-2xl font-semibold">What kind of feedback does DrawCoach give?</h2>
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <article>
+              <h3 className="text-base font-semibold">Shading and contrast</h3>
+              <p className="mt-2 text-sm leading-7 text-[#555c65]">
+                DrawCoach looks for drawings that are very dark, very bright, or low contrast. The
+                critique then suggests a small value change, such as grouping shadows or adding one
+                clearer highlight.
+              </p>
+            </article>
+            <article>
+              <h3 className="text-base font-semibold">Composition and clutter</h3>
+              <p className="mt-2 text-sm leading-7 text-[#555c65]">
+                The tool estimates whether the drawing feels too busy, too empty, or visually
+                off-center. The feedback is meant to help you simplify the next pass without
+                redrawing everything.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section className="border-t border-[#e7e8e5] py-8">
+          <h2 className="text-2xl font-semibold">Who it is for</h2>
+          <p className="mt-4 text-sm leading-7 text-[#555c65]">
+            This page is for artists searching for free drawing feedback, beginner sketch critique,
+            or a drawing critique tool that can quickly point out the next practical fix. DrawCoach
+            works best for rough sketches, practice drawings, thumbnails, and early idea passes.
+          </p>
+        </section>
       </div>
     </main>
   );

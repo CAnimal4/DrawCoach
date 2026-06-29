@@ -49,6 +49,13 @@ export const ROUTES = [
     priority: 0.8,
   },
   {
+    path: "/why-does-my-drawing-look-flat",
+    title: "Why Does My Drawing Look Flat? Simple Fixes for Sketches",
+    description:
+      "Learn why drawings look flat, how shading and line weight create depth, and how DrawCoach can suggest the next small fix for your sketch.",
+    priority: 0.75,
+  },
+  {
     path: "/privacy",
     title: "Privacy Policy - DrawCoach",
     description:

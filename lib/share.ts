@@ -13,17 +13,17 @@ export type ShareLinks = {
   sms: string;
 };
 
-export function buildShareData(): ShareData {
+export function buildShareData(text = SHARE_TEXT): ShareData {
   return {
     title: SHARE_TITLE,
-    text: SHARE_TEXT,
+    text,
     url: PRIMARY_SHARE_URL,
   };
 }
 
-export function buildShareLinks(): ShareLinks {
+export function buildShareLinks(text = SHARE_TEXT): ShareLinks {
   const subject = encodeURIComponent("Try DrawCoach");
-  const body = encodeURIComponent(SHARE_TEXT);
+  const body = encodeURIComponent(text);
 
   return {
     mailto: `mailto:?subject=${subject}&body=${body}`,

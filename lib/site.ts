@@ -11,11 +11,11 @@ export const SITE_DESCRIPTION =
 
 export const SITE_KEYWORDS = [
   "DrawCoach",
-  "drawing critique",
+  "drawing feedback",
   "free drawing feedback",
   "online drawing tool",
   "sketch feedback",
-  "art critique",
+  "art feedback",
   "drawing improvement",
   "beginner drawing help",
 ];
@@ -29,7 +29,7 @@ export const ROUTES = [
   },
   {
     path: "/about",
-    title: "About DrawCoach - How the Free Drawing Critique Tool Works",
+    title: "About DrawCoach - How the Free Drawing Feedback Tool Works",
     description:
       "Learn what DrawCoach is, how it analyzes drawings, what it does with uploads, and what kinds of feedback the free online tool provides.",
     priority: 0.9,
@@ -38,7 +38,7 @@ export const ROUTES = [
     path: "/drawing-feedback",
     title: "Free Drawing Feedback Online - DrawCoach",
     description:
-      "Use DrawCoach as a free drawing feedback and drawing critique tool to improve sketches online with clear, beginner-friendly next steps.",
+      "Use DrawCoach as a free drawing feedback tool to improve sketches online with clear, beginner-friendly next steps.",
     priority: 0.85,
   },
   {
@@ -66,7 +66,7 @@ export const ROUTES = [
     path: "/terms",
     title: "Terms of Use - DrawCoach",
     description:
-      "Read DrawCoach terms for using the free online drawing critique MVP, including educational-use limits and future product changes.",
+      "Read DrawCoach terms for using the free online drawing feedback MVP, including educational-use limits and future product changes.",
     priority: 0.5,
   },
   {

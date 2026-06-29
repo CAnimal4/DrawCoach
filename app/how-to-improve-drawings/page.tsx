@@ -24,7 +24,7 @@ export const metadata: Metadata = {
         url: OG_IMAGE_URL,
         width: 1200,
         height: 630,
-        alt: "DrawCoach free online drawing critique tool",
+        alt: "DrawCoach free online drawing feedback tool",
       },
     ],
   },
@@ -68,6 +68,10 @@ export default function HowToImproveDrawingsPage() {
           </Link>
         </header>
 
+        <Link className="mt-6 inline-flex text-sm font-semibold text-[#1946d2] hover:underline" href="/">
+          Back to DrawCoach
+        </Link>
+
         <section className="py-12">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#1946d2]">
             How to improve drawings
@@ -78,7 +82,7 @@ export default function HowToImproveDrawingsPage() {
           <p className="mt-5 text-base leading-7 text-[#555c65]">
             Most sketches improve fastest when you focus on a small number of fundamentals:
             shading, proportion, composition, and detail control. DrawCoach gives quick online
-            critique notes so you can decide what to fix next.
+            feedback notes so you can decide what to fix next.
           </p>
         </section>
 
@@ -92,9 +96,9 @@ export default function HowToImproveDrawingsPage() {
         </section>
 
         <section className="border-t border-[#e7e8e5] py-8">
-          <h2 className="text-2xl font-semibold">Use critique to choose one next step</h2>
+          <h2 className="text-2xl font-semibold">Use feedback to choose one next step</h2>
           <p className="mt-4 text-sm leading-7 text-[#555c65]">
-            A useful critique does not need to list every flaw. The best next step is usually one
+            Useful feedback does not need to list every flaw. The best next step is usually one
             small fix: darken one shadow group, adjust one proportion, simplify one busy area, or
             clarify one focal point.
           </p>

@@ -195,10 +195,10 @@ test("about page contains factual AI-readable answers", () => {
   assert.match(aboutSource, /FAQ_ITEMS/);
   assert.match(homeSource, /Free Drawing Feedback/);
   assert.match(homeSource, /How to Improve Drawings/);
-  assert.match(homeSource, /Why Drawings Look Flat/);
+  assert.match(homeSource, /Why does my drawing look flat\?/);
   assert.match(drawingFeedbackSource, /free drawing feedback/i);
   assert.match(drawingFeedbackSource, /improve sketches online/i);
-  assert.match(drawingFeedbackSource, /drawing critique tool/i);
+  assert.match(drawingFeedbackSource, /drawing feedback tool/i);
   assert.match(drawingFeedbackSource, /art improvement tool/i);
   assert.match(improveDrawingsSource, /flat shading/i);
   assert.match(improveDrawingsSource, /Bad proportions/i);
@@ -216,10 +216,10 @@ test("AI text endpoints describe the app clearly", async () => {
   const llmsBody = await llmsTxt().text();
   const aiBody = await aiTxt().text();
 
-  assert.match(llmsBody, /free online drawing critique/i);
+  assert.match(llmsBody, /free online drawing feedback/i);
   assert.match(llmsBody, /No accounts/i);
   assert.match(llmsBody, /Sitemap: https:\/\/drawcoach\.vercel\.app\/sitemap\.xml/i);
-  assert.match(aiBody, /Category: Free online drawing critique tool/i);
+  assert.match(aiBody, /Category: Free online drawing feedback tool/i);
   assert.match(aiBody, /Image generation: Not offered/i);
   assert.match(aiBody, /Robots: https:\/\/drawcoach\.vercel\.app\/robots\.txt/i);
 });

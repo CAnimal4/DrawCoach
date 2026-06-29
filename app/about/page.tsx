@@ -4,9 +4,9 @@ import { BrandLink } from "@/components/brand-link";
 import { absoluteUrl, OG_IMAGE_URL } from "@/lib/site";
 import { drawCoachJsonLd, FAQ_ITEMS } from "@/lib/structured-data";
 
-const pageTitle = "About DrawCoach - How the Free Drawing Critique Tool Works";
+const pageTitle = "About DrawCoach - How the Free Drawing Feedback Tool Works";
 const pageDescription =
-  "DrawCoach is a free online drawing critique tool that analyzes simple image metrics and returns short, beginner-friendly improvement steps.";
+  "DrawCoach is a free online drawing feedback tool that analyzes simple image metrics and returns short, beginner-friendly improvement steps.";
 
 export const dynamic = "force-static";
 
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
         url: OG_IMAGE_URL,
         width: 1200,
         height: 630,
-        alt: "DrawCoach free online drawing critique tool",
+        alt: "DrawCoach free online drawing feedback tool",
       },
     ],
   },
@@ -60,11 +60,11 @@ export default function AboutPage() {
             About DrawCoach
           </p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-normal sm:text-5xl">
-            Free online drawing critique with simple, specific next steps.
+            Free online drawing feedback with simple, specific next steps.
           </h1>
           <p className="mt-5 text-base leading-7 text-[#555c65]">
             DrawCoach is a browser-based MVP for people who want fast feedback on a sketch.
-            It focuses on practical critique: what is happening in the drawing, why it matters,
+            It focuses on practical feedback: what is happening in the drawing, why it matters,
             and the smallest easy fix to try next.
           </p>
         </section>

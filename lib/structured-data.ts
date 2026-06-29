@@ -66,7 +66,7 @@ export function drawCoachJsonLd() {
           priceCurrency: "USD",
         },
         featureList: [
-          "Free online drawing critique",
+          "Free online drawing feedback",
           "Image upload with local resizing",
           "Goal-based drawing feedback",
           "Rules-first visual analysis",

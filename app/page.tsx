@@ -20,7 +20,7 @@ export const metadata: Metadata = {
         url: OG_IMAGE_URL,
         width: 1200,
         height: 630,
-        alt: "DrawCoach free online drawing critique tool",
+        alt: "DrawCoach free online drawing feedback tool",
       },
     ],
   },

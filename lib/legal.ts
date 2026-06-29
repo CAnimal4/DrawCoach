@@ -13,7 +13,7 @@ export const policies = {
     title: "Privacy Policy",
     updated: "June 20, 2026",
     summary:
-      "DrawCoach is a lightweight drawing critique tool with no accounts and no intentional storage of uploaded drawings.",
+      "DrawCoach is a lightweight drawing feedback tool with no accounts and no intentional storage of uploaded drawings.",
     sections: [
       {
         heading: "What DrawCoach collects",
@@ -37,7 +37,7 @@ export const policies = {
     title: "Terms of Use",
     updated: "June 20, 2026",
     summary:
-      "DrawCoach is provided as a simple educational critique tool for quick, beginner-friendly drawing feedback.",
+      "DrawCoach is provided as a simple educational feedback tool for quick, beginner-friendly drawing feedback.",
     sections: [
       {
         heading: "Use of the app",

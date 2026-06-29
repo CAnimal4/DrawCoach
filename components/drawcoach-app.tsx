@@ -35,7 +35,7 @@ const ACCENTS: Record<AccentMode, { color: string; soft: string; name: string }>
 };
 
 export function DrawCoachApp() {
-  const [goal, setGoal] = useState<Goal>("realistic");
+  const [goal, setGoal] = useState<Goal>(() => getInitialGoal());
   const [upload, setUpload] = useState<UploadState | null>(null);
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState("");
@@ -78,6 +78,18 @@ export function DrawCoachApp() {
     }, 0);
 
     return () => window.clearTimeout(checkPromo);
+  }, []);
+
+  useEffect(() => {
+    const updateGoalFromUrl = window.setTimeout(() => {
+      const requestedGoal = getGoalFromUrl();
+
+      if (requestedGoal) {
+        setGoal(requestedGoal);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(updateGoalFromUrl);
   }, []);
 
   async function handleFile(file: File | undefined) {
@@ -123,6 +135,7 @@ export function DrawCoachApp() {
 
   async function shareDrawCoach() {
     setShareMessage("");
+    setShareFallbackOpen(true);
 
     if (typeof navigator.share === "function") {
       try {
@@ -215,7 +228,7 @@ export function DrawCoachApp() {
                 className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/20"
                 type="button"
                 onClick={() => {
-                  void shareDrawCoach();
+                  setShareFallbackOpen(true);
                 }}
               >
                 Share
@@ -251,7 +264,7 @@ export function DrawCoachApp() {
             </p>
             <div className="mt-7 max-w-md border-t border-[#e7e8e5] pt-5">
               <h2 className="text-base font-semibold text-[#161719]">
-                Improve sketches online with a fast drawing critique tool.
+                Improve sketches online with a fast drawing feedback tool.
               </h2>
               <p className="mt-2 text-sm leading-6 text-[#5f646b]">
                 DrawCoach focuses on shading, composition, detail, and clutter so your next drawing pass has a clear direction.
@@ -397,7 +410,7 @@ export function DrawCoachApp() {
               className="font-medium text-[#59606a] transition hover:text-[var(--accent)]"
               href="/why-does-my-drawing-look-flat"
             >
-              Why Drawings Look Flat
+              Why does my drawing look flat?
             </Link>
           </nav>
         </footer>
@@ -442,28 +455,51 @@ function ShareFallback({
   links: ReturnType<typeof buildShareLinks>;
   onClose: () => void;
 }) {
+  const [status, setStatus] = useState("");
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(SHARE_TEXT);
+      setStatus("Link copied.");
+    } catch {
+      setStatus("Copy failed. Use email or text.");
+    }
+  }
+
   return (
-    <section className="mt-4 flex flex-wrap items-center gap-2 rounded-md border border-[#dededb] bg-white px-4 py-3 text-sm">
-      <span className="font-medium text-[#34383e]">Share with:</span>
-      <a
-        className="rounded-md bg-[#1946d2] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#0f2f92]"
-        href={links.mailto}
-      >
-        Email
-      </a>
-      <a
-        className="rounded-md border border-[#d8dce1] px-3 py-2 text-xs font-semibold text-[#34383e] transition hover:border-[#1946d2] hover:text-[#1946d2]"
-        href={links.sms}
-      >
-        Text
-      </a>
-      <button
-        className="ml-auto rounded-md px-3 py-2 text-xs font-semibold text-[#737982] transition hover:bg-[#f3f5f8] hover:text-[#161719]"
-        type="button"
-        onClick={onClose}
-      >
-        Close
-      </button>
+    <section className="mt-4 rounded-md border border-[#dededb] bg-white px-4 py-3 text-sm">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-medium text-[#34383e]">Share DrawCoach:</span>
+        <button
+          className="rounded-md bg-[#1946d2] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#0f2f92]"
+          type="button"
+          onClick={() => {
+            void copyLink();
+          }}
+        >
+          Copy Link
+        </button>
+        <a
+          className="rounded-md border border-[#d8dce1] px-3 py-2 text-xs font-semibold text-[#34383e] transition hover:border-[#1946d2] hover:text-[#1946d2]"
+          href={links.mailto}
+        >
+          Email
+        </a>
+        <a
+          className="rounded-md border border-[#d8dce1] px-3 py-2 text-xs font-semibold text-[#34383e] transition hover:border-[#1946d2] hover:text-[#1946d2]"
+          href={links.sms}
+        >
+          Text
+        </a>
+        <button
+          className="ml-auto rounded-md px-3 py-2 text-xs font-semibold text-[#737982] transition hover:bg-[#f3f5f8] hover:text-[#161719]"
+          type="button"
+          onClick={onClose}
+        >
+          Close
+        </button>
+      </div>
+      {status ? <p className="mt-2 text-xs font-medium text-[#1946d2]">{status}</p> : null}
     </section>
   );
 }
@@ -500,7 +536,7 @@ function ResultCard({ result }: { result: AnalyzeResponse }) {
   return (
     <section className="animate-[fadeIn_280ms_ease-out] rounded-lg border border-[#dededb] bg-white p-5 shadow-[0_22px_70px_rgba(22,23,25,0.08)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">Drawing critique result</h2>
+        <h2 className="text-lg font-semibold">Drawing feedback result</h2>
         <button
           className="rounded-md border border-[#d8dce1] px-3 py-2 text-xs font-semibold text-[#34383e] transition hover:border-[#1946d2] hover:text-[#1946d2] focus:outline-none focus:ring-4 focus:ring-[#1946d2]/10"
           type="button"
@@ -734,6 +770,25 @@ function UploadIcon() {
 
 function titleCase(value: string) {
   return value.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function getInitialGoal(): Goal {
+  if (typeof window === "undefined") {
+    return "realistic";
+  }
+
+  return getGoalFromUrl() ?? "realistic";
+}
+
+function getGoalFromUrl(): Goal | null {
+  const requestedGoal = new URLSearchParams(window.location.search).get("goal");
+  const normalizedGoal = requestedGoal?.replaceAll("-", " ");
+
+  if (normalizedGoal && GOALS.includes(normalizedGoal as Goal)) {
+    return normalizedGoal as Goal;
+  }
+
+  return null;
 }
 
 function wait(duration: number): Promise<void> {

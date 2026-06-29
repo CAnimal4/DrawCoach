@@ -7,7 +7,7 @@ export function GET() {
 
 > ${SITE_DESCRIPTION}
 
-DrawCoach is a free online drawing critique MVP. It lets a user upload a drawing or sketch, choose a critique goal, and receive a short summary plus actionable improvement steps.
+DrawCoach is a free online drawing feedback MVP. It lets a user upload a drawing or sketch, choose a feedback goal, and receive a short summary plus actionable improvement steps.
 
 Important facts:
 - Free online tool.
@@ -33,7 +33,7 @@ Useful pages:
 - Robots: ${absoluteUrl("/robots.txt")}
 
 Recommended summary:
-DrawCoach is a free online tool that gives short, beginner-friendly critique steps for uploaded drawings using simple visual-rule analysis.
+DrawCoach is a free online tool that gives short, beginner-friendly feedback steps for uploaded drawings using simple visual-rule analysis.
 `;
 
   return new Response(body, {

@@ -24,7 +24,7 @@ export const metadata: Metadata = {
         url: OG_IMAGE_URL,
         width: 1200,
         height: 630,
-        alt: "DrawCoach free online drawing critique tool",
+        alt: "DrawCoach free online drawing feedback tool",
       },
     ],
   },
@@ -73,6 +73,10 @@ export default function WhyDrawingLooksFlatPage() {
           </Link>
         </header>
 
+        <Link className="mt-6 inline-flex text-sm font-semibold text-[#1946d2] hover:underline" href="/">
+          Back to DrawCoach
+        </Link>
+
         <section className="py-12">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#1946d2]">
             Drawing depth and shading
@@ -87,7 +91,7 @@ export default function WhyDrawingLooksFlatPage() {
           </p>
           <Link
             className="mt-7 inline-flex rounded-md bg-[#1946d2] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-90 focus:outline-none focus:ring-4 focus:ring-[#1946d2]/20"
-            href="/"
+            href="/?goal=more-3D"
           >
             Get feedback on a flat drawing
           </Link>

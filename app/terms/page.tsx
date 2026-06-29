@@ -8,14 +8,14 @@ export const dynamic = "force-static";
 export const metadata: Metadata = {
   title: "Terms of Use - DrawCoach",
   description:
-    "Terms for using DrawCoach, a free online drawing critique MVP with educational feedback and possible future product changes.",
+    "Terms for using DrawCoach, a free online drawing feedback MVP with educational feedback and possible future product changes.",
   alternates: {
     canonical: absoluteUrl("/terms"),
   },
   openGraph: {
     title: "Terms of Use - DrawCoach",
     description:
-      "Terms for using DrawCoach, a free online drawing critique MVP with educational feedback and possible future product changes.",
+      "Terms for using DrawCoach, a free online drawing feedback MVP with educational feedback and possible future product changes.",
     url: absoluteUrl("/terms"),
     images: [OG_IMAGE_URL],
   },

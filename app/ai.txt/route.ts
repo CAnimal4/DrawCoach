@@ -6,7 +6,7 @@ export function GET() {
   const body = `${SITE_NAME}
 
 Description: ${SITE_DESCRIPTION}
-Category: Free online drawing critique tool
+Category: Free online drawing feedback tool
 Audience: People who want quick practice feedback on a drawing or sketch
 Price: Free
 Accounts: Not required
